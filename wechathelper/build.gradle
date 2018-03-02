@@ -1,0 +1,63 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.jakewharton.butterknife'
+
+android {
+    compileSdkVersion 26
+    defaultConfig {
+        applicationId "com.wuxiaosu.wechathelper"
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            manifestPlaceholders = [
+                    TencentMapKey: "WKNBZ-3UU6X-B4D4K-TRLDW-C5NWQ-XSBGZ"
+            ]
+            applicationVariants.all { variant ->
+                variant.outputs.all { output ->
+                    def oldFile = output.outputFile
+                    def newName = oldFile.name
+                    if (variant.buildType.name == 'release') {
+                        newName = oldFile.name.replace(".", "-v" + variant.versionName + '.')
+                    }
+                    outputFileName = newName
+                }
+            }
+        }
+
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            manifestPlaceholders = [
+                    TencentMapKey: "WKNBZ-3UU6X-B4D4K-TRLDW-C5NWQ-XSBGZ"
+            ]
+        }
+
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    //noinspection GradleCompatible
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    provided 'de.robv.android.xposed:api:82'
+    compile 'com.jaeger.statusbarutil:library:1.4.0'
+    compile 'com.github.arimorty:floatingsearchview:2.1.1'
+
+    compile 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    compile project(':tencentmaplib')
+    implementation 'com.github.wuxiaosu:SettingLabelView:1.0@aar'
+}

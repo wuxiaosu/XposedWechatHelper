@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_grey">
+
+    <include layout="@layout/toolbar_common" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/toolbar_height">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/default_margin">
+
+            <com.wuxiaosu.widget.SettingLabelView
+                android:id="@+id/slv_hide_icon"
+                style="@style/SettingLayout"
+                app:label_text="隐藏图标"
+                app:preferences_key="@string/pre_key_hide_icon" />
+
+            <com.wuxiaosu.widget.SettingLabelView
+                style="@style/SettingLayout"
+                app:contact_view="@id/ll_location"
+                app:label_text="模拟定位"
+                app:preferences_key="@string/pre_key_fake_location" />
+
+            <RelativeLayout
+                android:id="@+id/ll_location"
+                style="@style/SettingLayout"
+                android:layout_marginTop="0dp"
+                android:paddingLeft="@dimen/default_margin"
+                android:paddingRight="@dimen/default_margin">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toLeftOf="@id/iv_location"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/et_latitude"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginRight="@dimen/little_margin"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:hint="纬度"
+                        android:inputType="numberDecimal" />
+
+                    <EditText
+                        android:id="@+id/et_longitude"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/little_margin"
+                        android:layout_marginRight="@dimen/little_margin"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:hint="经度"
+                        android:inputType="numberDecimal" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/iv_location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/mini_margin"
+                    android:layout_marginRight="@dimen/mini_margin"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="@dimen/mini_margin"
+                    android:src="@drawable/ic_my_location"
+                    android:tint="@color/accent" />
+            </RelativeLayout>
+
+            <com.wuxiaosu.widget.SettingLabelView
+                style="@style/SettingLayout"
+                app:contact_view="@id/ll_money"
+                app:label_text="零钱修改"
+                app:preferences_key="@string/pre_key_fake_money" />
+
+            <RelativeLayout
+                android:id="@+id/ll_money"
+                style="@style/SettingLabelLayout"
+                android:layout_marginTop="0dp"
+                android:paddingLeft="@dimen/default_margin"
+                android:paddingRight="@dimen/default_margin">
+
+                <EditText
+                    android:id="@+id/et_money"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/little_margin"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:hint="零钱"
+                    android:inputType="numberDecimal"
+                    android:singleLine="true" />
+
+            </RelativeLayout>
+
+
+            <com.wuxiaosu.widget.SettingLabelView
+                style="@style/SettingLayout"
+                app:contact_view="@id/rl_morra"
+                app:label_text="猜拳结果"
+                app:preferences_key="@string/pre_key_fake_morra" />
+
+            <RadioGroup
+                android:id="@+id/rl_morra"
+                style="@style/SettingRadioGroup"
+                android:background="@color/white">
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="0"
+                    android:text="剪刀" />
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="1"
+                    android:text="石头" />
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="2"
+                    android:text="布" />
+
+            </RadioGroup>
+
+            <com.wuxiaosu.widget.SettingLabelView
+                style="@style/SettingLayout"
+                app:contact_view="@id/rl_dice"
+                app:label_text="骰子点数"
+                app:preferences_key="@string/pre_key_fake_dice" />
+
+            <RadioGroup
+                android:id="@+id/rl_dice"
+                style="@style/SettingRadioGroup"
+                android:background="@color/white">
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="0"
+                    android:text="一" />
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="1"
+                    android:text="二" />
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="2"
+                    android:text="三" />
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="3"
+                    android:text="四" />
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="4"
+                    android:text="五" />
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="5"
+                    android:text="六" />
+
+            </RadioGroup>
+
+            <com.wuxiaosu.widget.SettingLabelView
+                style="@style/SettingLayout"
+                android:background="@color/white"
+                app:contact_view="@id/rl_step"
+                app:label_text="步数修改"
+                app:preferences_key="@string/pre_key_fake_step" />
+
+            <RadioGroup
+                android:id="@+id/rl_step"
+                android:background="@color/white"
+                style="@style/SettingRadioGroup">
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="2"
+                    android:text="x2倍" />
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="3"
+                    android:text="x3倍" />
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="5"
+                    android:text="x5倍" />
+
+                <RadioButton
+                    style="@style/SettingRadioButton"
+                    android:contentDescription="7"
+                    android:text="x7倍" />
+
+            </RadioGroup>
+
+            <com.wuxiaosu.widget.SettingLabelView
+                style="@style/SettingLayout"
+                app:label_text="消息防撤回"
+                app:preferences_key="@string/pre_key_disable_revoke" />
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>
+
