@@ -25,7 +25,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
  * Created by su on 2017/12/29.
  */
 
-public class Main implements IXposedHookLoadPackage, IXposedHookInitPackageResources {
+public class Main implements IXposedHookLoadPackage {
 
     @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
@@ -61,7 +61,6 @@ public class Main implements IXposedHookLoadPackage, IXposedHookInitPackageResou
     }
 
     private void handleHook(ClassLoader classLoader, String versionName) {
-        Log.e("mie", "hook:  ----- >>> com.tencent.mm ");
         new TencentLocationManagerHook(versionName).hook(classLoader);
         new EmojiGameHook(versionName).hook(classLoader);
         new MoneyHook(versionName).hook(classLoader);
@@ -80,14 +79,4 @@ public class Main implements IXposedHookLoadPackage, IXposedHookInitPackageResou
         return "";
     }
 
-    @Override
-    public void handleInitPackageResources(XC_InitPackageResources.InitPackageResourcesParam resparam) throws Throwable {
-
-        if (!resparam.packageName.equals("com.tencent.mm"))
-            return;
-
-//        Log.e("mie", "handleInitPackageResources:  ----- >>> com.tencent.mm ");
-
-//        resparam.res.setReplacement("com.tencent.mm", "string", "c0c", "加个锤子");
-    }
 }

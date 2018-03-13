@@ -13,6 +13,7 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -57,7 +58,7 @@ public class MainActivity extends BaseActivity {
     RadioGroup rlStep;
 
     private final String[] wechatSupportVersions =
-            new String[]{"6.6.0", "6.6.1", "6.6.2", "6.6.3"};
+            new String[]{"6.6.0", "6.6.1", "6.6.2", "6.6.3", "6.6.5"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,7 +135,7 @@ public class MainActivity extends BaseActivity {
             if (!TextUtils.isEmpty(temp)) {
                 sharedPreferences.edit().putString(getString(preStrResId), temp).apply();
                 for (int i = 0; i < ((RadioGroup) view).getChildCount(); i++) {
-                    if (((RadioGroup) view).getChildAt(i).getContentDescription().toString().equals((String) defaultValue)) {
+                    if (((RadioGroup) view).getChildAt(i).getContentDescription().toString().equals(temp)) {
                         ((RadioButton) ((RadioGroup) view).getChildAt(i)).setChecked(true);
                         break;
                     }

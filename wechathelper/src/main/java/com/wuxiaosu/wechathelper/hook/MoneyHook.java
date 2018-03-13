@@ -53,12 +53,13 @@ public class MoneyHook {
                 walletBalanceManagerUIMethodName = "au";
                 walletBalanceManagerUIFiledName = "szP";
                 break;
-            case "6.6.3":
-                mallIndexUIMethodName = "aYm";
-                mallIndexUIFiledName = "olV";
+            default:
+            case "6.6.5":
+                mallIndexUIMethodName = "aYS";
+                mallIndexUIFiledName = "orA";
 
-                walletBalanceManagerUIMethodName = "au";
-                walletBalanceManagerUIFiledName = "szP";
+                walletBalanceManagerUIMethodName = "av";
+                walletBalanceManagerUIFiledName = "sFT";
                 break;
         }
     }

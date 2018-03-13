@@ -22,7 +22,9 @@
 -keep class com.wuxiaosu.wechathelper.activity.MainActivity {
     private static boolean isModuleActive(...);
 }
--keep class com.wuxiaosu.wechathelper.Main { *; }
+-keep class com.wuxiaosu.wechathelper.Main {
+    public void handleLoadPackage(...);
+}
 #腾讯地图 3D sdk
 -keep class com.tencent.tencentmap.**{*;}
 -keep class com.tencent.map.**{*;}

@@ -1,6 +1,7 @@
 package com.wuxiaosu.wechathelper.hook;
 
 import android.content.ContentValues;
+import android.util.Log;
 
 import com.wuxiaosu.wechathelper.BuildConfig;
 import com.wuxiaosu.widget.SettingLabelView;

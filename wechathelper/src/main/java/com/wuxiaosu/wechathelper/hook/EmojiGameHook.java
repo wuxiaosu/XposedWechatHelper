@@ -20,21 +20,30 @@ public class EmojiGameHook {
     private boolean fakeDice;
     private String dice;
     private String methodName;
+    private String clazzName;
 
     public EmojiGameHook(String versionName) {
         switch (versionName) {
-            //6.6.1 通过
             case "6.6.0":
+                clazzName = "com.tencent.mm.sdk.platformtools.bh";
                 methodName = "em";
                 break;
             case "6.6.1":
+                clazzName = "com.tencent.mm.sdk.platformtools.bh";
                 methodName = "en";
                 break;
             case "6.6.2":
+                clazzName = "com.tencent.mm.sdk.platformtools.bh";
                 methodName = "eF";
                 break;
             case "6.6.3":
+                clazzName = "com.tencent.mm.sdk.platformtools.bh";
                 methodName = "eF";
+                break;
+            default:
+            case "6.6.5":
+                clazzName = "com.tencent.mm.sdk.platformtools.bi";
+                methodName = "eI";
                 break;
         }
     }
@@ -43,7 +52,7 @@ public class EmojiGameHook {
         xsp = new XSharedPreferences(BuildConfig.APPLICATION_ID, SettingLabelView.DEFAULT_PREFERENCES_NAME);
         xsp.makeWorldReadable();
         try {
-            Class clazz = XposedHelpers.findClass("com.tencent.mm.sdk.platformtools.bh", classLoader);
+            Class clazz = XposedHelpers.findClass(clazzName, classLoader);
             XposedHelpers.findAndHookMethod(clazz, methodName, int.class, int.class, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
