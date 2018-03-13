@@ -1,11 +1,10 @@
 package com.wuxiaosu.wechathelper;
 
-import android.app.Application;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.util.Log;
 
 import com.wuxiaosu.wechathelper.hook.EmojiGameHook;
 import com.wuxiaosu.wechathelper.hook.MoneyHook;
@@ -13,12 +12,11 @@ import com.wuxiaosu.wechathelper.hook.RevokeMsgHook;
 import com.wuxiaosu.wechathelper.hook.StepHook;
 import com.wuxiaosu.wechathelper.hook.TencentLocationManagerHook;
 
-import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
@@ -35,27 +33,37 @@ public class Main implements IXposedHookLoadPackage {
             return;
         }
 
-        if (lpparam.packageName.equals(BuildConfig.APPLICATION_ID)) {
+        final String packageName = lpparam.packageName;
+        final String processName = lpparam.processName;
+
+        if (BuildConfig.APPLICATION_ID.equals(packageName)) {
             XposedHelpers.findAndHookMethod("com.wuxiaosu.wechathelper.activity.MainActivity", lpparam.classLoader,
                     "isModuleActive", XC_MethodReplacement.returnConstant(true));
         }
 
-        if (lpparam.packageName.equals("com.tencent.mm")) {
-            try {
-                XposedHelpers.findAndHookMethod(Application.class,
-                        "attach",
-                        Context.class, new XC_MethodHook() {
-                            @Override
-                            protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
-                                super.afterHookedMethod(param);
-                                Context context = (Context) param.args[0];
-                                ClassLoader appClassLoader = context.getClassLoader();
-                                handleHook(appClassLoader,
-                                        getVersionName(context, "com.tencent.mm"));
-                            }
-                        });
-            } catch (Error | Exception e) {
-                e.printStackTrace();
+        final String WECHAT_PACKAGE = "com.tencent.mm";
+
+        if (WECHAT_PACKAGE.equals(packageName)) {
+            if (WECHAT_PACKAGE.equals(processName)) {
+                // 只HOOK UI进程
+                try {
+                    // 由于微信Tinker的存在，hook Application.attach 不如 ContextWrapper.attachBaseContext稳定
+                    // 参见 ：https://github.com/Gh0u1L5/WechatMagician/blob/master/src/main/java/com/gh0u1l5/wechatmagician/backend/WechatHook.kt
+                    XposedHelpers.findAndHookMethod(ContextWrapper.class,
+                            "attachBaseContext",
+                            Context.class, new XC_MethodHook() {
+                                @Override
+                                protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
+                                    super.afterHookedMethod(param);
+                                    Context context = (Context) param.args[0];
+                                    ClassLoader appClassLoader = context.getClassLoader();
+                                    handleHook(appClassLoader,
+                                            getVersionName(context, "com.tencent.mm"));
+                                }
+                            });
+                } catch (Throwable e) {
+                    XposedBridge.log(e);
+                }
             }
         }
     }
