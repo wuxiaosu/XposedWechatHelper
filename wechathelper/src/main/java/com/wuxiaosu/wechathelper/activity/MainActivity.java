@@ -212,6 +212,7 @@ public class MainActivity extends BaseActivity {
      * @return
      */
     private static boolean isModuleActive() {
+        Log.i(MainActivity.class.getSimpleName(), "dummy log for hook : " + MainActivity.class);
         return false;
     }
 }
