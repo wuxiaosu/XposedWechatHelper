@@ -77,7 +77,7 @@
                     android:layout_marginRight="@dimen/mini_margin"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:padding="@dimen/mini_margin"
-                    android:src="@drawable/ic_my_location"
+                    android:src="@drawable/ic_current_location"
                     android:tint="@color/accent" />
             </RelativeLayout>
 

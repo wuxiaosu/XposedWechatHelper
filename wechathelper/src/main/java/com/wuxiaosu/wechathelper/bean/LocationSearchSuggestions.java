@@ -4,7 +4,7 @@ import android.annotation.SuppressLint;
 import android.os.Parcel;
 
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
-import com.tencent.tencentmap.mapsdk.maps.model.LatLng;
+import com.tencent.mapsdk.raster.model.LatLng;
 
 /**
  * Created by su on 2018/3/2.
@@ -45,6 +45,6 @@ public class LocationSearchSuggestions implements SearchSuggestion {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(title);
         dest.writeString(body);
-        dest.writeParcelable(latLng, flags);
+        dest.writeValue(latLng);
     }
 }

@@ -19,19 +19,3 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--keep class com.wuxiaosu.wechathelper.activity.MainActivity {
-    private static boolean isModuleActive(...);
-}
--keep class com.wuxiaosu.wechathelper.Main {
-    public void handleLoadPackage(...);
-}
-#腾讯地图 2D sdk
--keep class com.tencent.mapsdk.**{*;}
--keep class com.tencent.tencentmap.**{*;}
-
-#腾讯地图检索sdk
--keep class com.tencent.lbssearch.**{*;}
--keep class com.google.gson.examples.android.model.** { *; }
-
--dontwarn  org.eclipse.jdt.annotation.**
--dontwarn  c.t.**

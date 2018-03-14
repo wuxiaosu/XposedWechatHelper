@@ -10,7 +10,7 @@ android {
         versionCode 2
         versionName "1.01"
     }
-    
+
     buildTypes {
         release {
             minifyEnabled true
@@ -53,11 +53,12 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     provided 'de.robv.android.xposed:api:82'
     compile 'com.jaeger.statusbarutil:library:1.4.0'
     compile 'com.github.arimorty:floatingsearchview:2.1.1'
     compile 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
-    compile project(':tencentmaplib')
+    compile project(':tencentmaplitelib')
     implementation 'com.github.wuxiaosu:SettingLabelView:1.0@aar'
 }

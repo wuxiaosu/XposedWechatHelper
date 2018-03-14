@@ -13,7 +13,6 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -94,7 +93,7 @@ public class MainActivity extends BaseActivity {
 
     @OnClick({R.id.iv_location})
     public void onClickListener() {
-        TencentMapActivity.actionStart(this,
+        TencentMapLiteActivity.actionStart(this,
                 etLatitude.getText().toString(), etLongitude.getText().toString());
     }
 
@@ -153,9 +152,9 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == TencentMapActivity.REQUEST_CODE && resultCode == RESULT_OK) {
-            etLatitude.setText(data.getStringExtra(TencentMapActivity.LAT_KEY));
-            etLongitude.setText(data.getStringExtra(TencentMapActivity.LON_KEY));
+        if (requestCode == TencentMapLiteActivity.REQUEST_CODE && resultCode == RESULT_OK) {
+            etLatitude.setText(data.getStringExtra(TencentMapLiteActivity.LAT_KEY));
+            etLongitude.setText(data.getStringExtra(TencentMapLiteActivity.LON_KEY));
         }
     }
 

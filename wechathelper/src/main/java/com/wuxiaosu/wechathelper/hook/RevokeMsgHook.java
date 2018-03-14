@@ -26,6 +26,8 @@ public class RevokeMsgHook {
 
     private static boolean disableRevoke;
 
+    // TODO: 2018/3/14 语音消息撤回后无法播放
+
     public static void hook(ClassLoader classLoader) {
         xsp = new XSharedPreferences(BuildConfig.APPLICATION_ID, SettingLabelView.DEFAULT_PREFERENCES_NAME);
         xsp.makeWorldReadable();
@@ -39,11 +41,14 @@ public class RevokeMsgHook {
                             if (param.args[0].equals("message")) {
                                 ContentValues contentValues = ((ContentValues) param.args[1]);
                                 reload();
-                                if (disableRevoke && contentValues.getAsInteger("type") == 10000) {
+
+                                if (disableRevoke && contentValues.getAsInteger("type") == 10000 &&
+                                        !contentValues.getAsString("content").equals("你撤回了一条消息")) {
                                     handleMessageRecall(contentValues);
                                     param.setResult(1);
                                 }
                             }
+
                             super.beforeHookedMethod(param);
                         }
                     });
