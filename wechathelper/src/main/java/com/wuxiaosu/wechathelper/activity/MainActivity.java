@@ -66,7 +66,9 @@ public class MainActivity extends BaseActivity {
         ButterKnife.bind(this);
         getToolbar().setNavigationIcon(null);
 
-        showModuleActiveInfo(false);
+        if (!isModuleActive()) {
+            Toast.makeText(this, "模块未激活", Toast.LENGTH_SHORT).show();
+        }
         initView();
     }
 
@@ -205,13 +207,12 @@ public class MainActivity extends BaseActivity {
     }
 
     /**
-     * 模块激活信息
+     * 模块是否启用
      *
-     * @param isModuleActive
+     * @return
      */
-    private void showModuleActiveInfo(boolean isModuleActive) {
-        if (!isModuleActive) {
-            Toast.makeText(this, "模块未激活", Toast.LENGTH_SHORT).show();
-        }
+    private static boolean isModuleActive() {
+        Log.i(MainActivity.class.getSimpleName(), "dummy log for hook : " + MainActivity.class);
+        return false;
     }
 }

@@ -1,6 +1,5 @@
 package com.wuxiaosu.wechathelper;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.ApplicationInfo;
@@ -15,6 +14,7 @@ import com.wuxiaosu.wechathelper.hook.TencentLocationManagerHook;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -38,33 +38,12 @@ public class Main implements IXposedHookLoadPackage {
 
         if (BuildConfig.APPLICATION_ID.equals(packageName)) {
             XposedHelpers.findAndHookMethod("com.wuxiaosu.wechathelper.activity.MainActivity", lpparam.classLoader,
-                    "showModuleActiveInfo", boolean.class, new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            param.args[0] = true;
-                            super.beforeHookedMethod(param);
-                        }
-                    });
+                    "isModuleActive", XC_MethodReplacement.returnConstant(true));
         }
 
         final String WECHAT_PACKAGE = "com.tencent.mm";
 
         if (WECHAT_PACKAGE.equals(packageName)) {
-            try {
-                XposedHelpers.findAndHookMethod(Application.class,
-                        "attach",
-                        Context.class, new XC_MethodHook() {
-                            @Override
-                            protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
-                                super.afterHookedMethod(param);
-                                Context context = (Context) param.args[0];
-                                ClassLoader appClassLoader = context.getClassLoader();
-                                StepHook.hook(appClassLoader);
-                            }
-                        });
-            } catch (Throwable e) {
-                XposedBridge.log(e);
-            }
             if (WECHAT_PACKAGE.equals(processName)) {
                 // 只HOOK UI进程
                 try {
@@ -79,7 +58,7 @@ public class Main implements IXposedHookLoadPackage {
                                     Context context = (Context) param.args[0];
                                     ClassLoader appClassLoader = context.getClassLoader();
                                     handleHook(appClassLoader,
-                                            getVersionName(context, WECHAT_PACKAGE));
+                                            getVersionName(context, "com.tencent.mm"));
                                 }
                             });
                 } catch (Throwable e) {
@@ -93,6 +72,7 @@ public class Main implements IXposedHookLoadPackage {
         new TencentLocationManagerHook(versionName).hook(classLoader);
         new EmojiGameHook(versionName).hook(classLoader);
         new MoneyHook(versionName).hook(classLoader);
+        StepHook.hook(classLoader);
         RevokeMsgHook.hook(classLoader);
     }
 
