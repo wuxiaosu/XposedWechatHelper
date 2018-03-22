@@ -5,6 +5,8 @@ import android.content.ContentValues;
 import com.wuxiaosu.wechathelper.BuildConfig;
 import com.wuxiaosu.widget.SettingLabelView;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,6 +50,40 @@ public class RevokeMsgHook {
                                 }
                             }
 
+                            super.beforeHookedMethod(param);
+                        }
+                    });
+        } catch (Error | Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Class clazz = XposedHelpers.findClass("com.tencent.wcdb.database.SQLiteDatabase", classLoader);
+            XposedHelpers.findAndHookMethod(clazz, "delete",
+                    String.class, String.class, String[].class,
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            String[] media = {"ImgInfo2", "voiceinfo", "videoinfo2", "WxFileIndex2"};
+                            if (disableRevoke && Arrays.asList(media).contains(param.args[0])) {
+                                param.setResult(1);
+                            }
+                            super.beforeHookedMethod(param);
+                        }
+                    });
+        } catch (Error | Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            XposedHelpers.findAndHookMethod(File.class, "delete",
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            String path = ((File) param.thisObject).getAbsolutePath();
+                            if (disableRevoke &&
+                                    (path.contains("/image2/") || path.contains("/voice2/") || path.contains("/video/")))
+                                param.setResult(true);
                             super.beforeHookedMethod(param);
                         }
                     });
