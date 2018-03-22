@@ -14,6 +14,8 @@
     <string name="pre_key_morra">morra</string>
     <string name="pre_key_dice">dice</string>
     <string name="pre_key_disable_revoke">disable_revoke</string>
+    <string name="pre_key_hide_discover">hide_discover</string>
+
 
     <string name="action_search">搜索</string>
     <string name="action_about">关于</string>

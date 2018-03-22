@@ -20,7 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -keep class com.wuxiaosu.wechathelper.activity.MainActivity {
-    private static boolean isModuleActive(...);
+    private void showModuleActiveInfo(...);
 }
 -keep class com.wuxiaosu.wechathelper.Main {
     public void handleLoadPackage(...);

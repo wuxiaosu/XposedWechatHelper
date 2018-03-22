@@ -1,7 +1,6 @@
 package com.wuxiaosu.wechathelper.hook;
 
 import android.content.ContentValues;
-import android.util.Log;
 
 import com.wuxiaosu.wechathelper.BuildConfig;
 import com.wuxiaosu.widget.SettingLabelView;
@@ -65,7 +64,12 @@ public class RevokeMsgHook {
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                             storageInsertClazz = param.thisObject;
                             Object msg = param.args[0];
-                            long msgId = XposedHelpers.getLongField(msg, "field_msgId");
+                            long msgId = -1;
+                            try {
+                                msgId = XposedHelpers.getLongField(msg, "field_msgId");
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                            }
                             msgCacheMap.put(msgId, msg);
                             super.afterHookedMethod(param);
                         }

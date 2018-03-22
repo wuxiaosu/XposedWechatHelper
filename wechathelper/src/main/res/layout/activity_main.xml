@@ -22,7 +22,8 @@
                 android:id="@+id/slv_hide_icon"
                 style="@style/SettingLayout"
                 app:label_text="隐藏图标"
-                app:preferences_key="@string/pre_key_hide_icon" />
+                app:preferences_key="@string/pre_key_hide_icon"
+                app:subheading_text="隐藏图标后可以从 Xposed 模块中打开应用" />
 
             <com.wuxiaosu.widget.SettingLabelView
                 style="@style/SettingLayout"
@@ -188,8 +189,8 @@
 
             <RadioGroup
                 android:id="@+id/rl_step"
-                android:background="@color/white"
-                style="@style/SettingRadioGroup">
+                style="@style/SettingRadioGroup"
+                android:background="@color/white">
 
                 <RadioButton
                     style="@style/SettingRadioButton"
@@ -217,6 +218,12 @@
                 style="@style/SettingLayout"
                 app:label_text="消息防撤回"
                 app:preferences_key="@string/pre_key_disable_revoke" />
+
+            <com.wuxiaosu.widget.SettingLabelView
+                style="@style/SettingLayout"
+                app:label_text="隐藏“发现页”"
+                app:preferences_key="@string/pre_key_hide_discover"
+                app:subheading_text="设置改变后需要重启微信" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

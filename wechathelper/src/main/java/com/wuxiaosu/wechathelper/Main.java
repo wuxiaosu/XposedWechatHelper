@@ -8,10 +8,12 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
 import com.wuxiaosu.wechathelper.hook.EmojiGameHook;
+import com.wuxiaosu.wechathelper.hook.ExdeviceRankHook;
 import com.wuxiaosu.wechathelper.hook.MoneyHook;
 import com.wuxiaosu.wechathelper.hook.RevokeMsgHook;
 import com.wuxiaosu.wechathelper.hook.StepHook;
 import com.wuxiaosu.wechathelper.hook.TencentLocationManagerHook;
+import com.wuxiaosu.wechathelper.hook.UIHook;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -24,6 +26,8 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
  */
 
 public class Main implements IXposedHookLoadPackage {
+
+    private final String WECHAT_PACKAGE = "com.tencent.mm";
 
     @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
@@ -46,8 +50,6 @@ public class Main implements IXposedHookLoadPackage {
                         }
                     });
         }
-
-        final String WECHAT_PACKAGE = "com.tencent.mm";
 
         if (WECHAT_PACKAGE.equals(packageName)) {
             try {
@@ -93,6 +95,9 @@ public class Main implements IXposedHookLoadPackage {
         new TencentLocationManagerHook(versionName).hook(classLoader);
         new EmojiGameHook(versionName).hook(classLoader);
         new MoneyHook(versionName).hook(classLoader);
+        new UIHook(versionName).hook(classLoader);
+        new ExdeviceRankHook(versionName).hook(classLoader);
+
         RevokeMsgHook.hook(classLoader);
     }
 
@@ -106,5 +111,4 @@ public class Main implements IXposedHookLoadPackage {
         }
         return "";
     }
-
 }
