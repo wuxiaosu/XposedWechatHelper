@@ -6,9 +6,9 @@ android {
     defaultConfig {
         applicationId "com.wuxiaosu.wechathelper"
         minSdkVersion 21
-        targetSdkVersion 22
-        versionCode 4
-        versionName "1.03"
+        targetSdkVersion 23
+        versionCode 5
+        versionName "1.04"
     }
 
     signingConfigs {
