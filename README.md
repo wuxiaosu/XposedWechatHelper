@@ -5,8 +5,17 @@ Xposed 微信辅助模块，实现消息防撤回、模拟位置、运动步数�
 ![01.png](https://raw.githubusercontent.com/wuxiaosu/XposedWechatHelper/master/screenshots/01.png)
 ![02.png](https://raw.githubusercontent.com/wuxiaosu/XposedWechatHelper/master/screenshots/02.png)
 ## 下载
-- release from [github](https://github.com/wuxiaosu/XposedWechatHelper/releases) [v1.03](https://github.com/wuxiaosu/XposedWechatHelper/releases/tag/v1.03) 
+- release from [github](https://github.com/wuxiaosu/XposedWechatHelper/releases) [v1.05](https://github.com/wuxiaosu/XposedWechatHelper/releases/tag/v1.05) 
 - release from [酷安](https://www.coolapk.com/apk/180057) 
+## v1.05 
+修复  
+1.语音消息撤回后无法播放；  
+2.图片消息撤回后无法查看；  
+3.微信运动一键点赞只能点击前几个人；  
+待解决bug  
+隐藏“发现页”之后，从个人资料页点击“发消息”进入聊天界面，再点击左上角返回按钮会闪退，可以在聊天界面左滑返回；
+## v1.04 
+修复部分机型 1.03 无法覆盖安装 1.02 的问题；
 ## v1.03 
 新增  
 1.微信运动一键点赞；  

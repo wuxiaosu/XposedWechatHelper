@@ -27,8 +27,6 @@ public class RevokeMsgHook {
 
     private static boolean disableRevoke;
 
-    // TODO: 2018/3/14 语音消息撤回后无法播放
-
     public static void hook(ClassLoader classLoader) {
         xsp = new XSharedPreferences(BuildConfig.APPLICATION_ID, SettingLabelView.DEFAULT_PREFERENCES_NAME);
         xsp.makeWorldReadable();

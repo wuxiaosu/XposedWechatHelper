@@ -94,7 +94,7 @@ public class ExdeviceRankHook {
                                 }
                                 if (!nickName.equals(username)) {
                                     View view = ((RelativeLayout) ((LinearLayout)
-                                            ((RelativeLayout) listView.getChildAt(i))
+                                            ((RelativeLayout) listAdapter.getView(i, null, null))
                                                     .getChildAt(1))
                                             .getChildAt(1)).getChildAt(1);
                                     view.performClick();
