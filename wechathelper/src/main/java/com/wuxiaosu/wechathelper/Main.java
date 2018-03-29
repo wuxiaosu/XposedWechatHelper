@@ -96,8 +96,7 @@ public class Main implements IXposedHookLoadPackage {
         new EmojiGameHook(versionName).hook(classLoader);
         new MoneyHook(versionName).hook(classLoader);
         new UIHook(versionName).hook(classLoader);
-        new ExdeviceRankHook(versionName).hook(classLoader);
-
+        ExdeviceRankHook.getInstance().init(classLoader, versionName);
         RevokeMsgHook.hook(classLoader);
     }
 

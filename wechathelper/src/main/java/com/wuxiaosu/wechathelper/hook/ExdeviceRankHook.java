@@ -1,5 +1,7 @@
 package com.wuxiaosu.wechathelper.hook;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -22,7 +24,12 @@ public class ExdeviceRankHook {
     private ListView listView;
     private int likeIconId = 0;
 
-    public ExdeviceRankHook(String versionName) {
+    private ExdeviceRankHook() {
+    }
+
+    private ClassLoader classLoader;
+
+    public void init(ClassLoader classLoader, String versionName) {
         switch (versionName) {
             case "6.6.0":
                 itemInfoFieldName = "lqh";
@@ -41,9 +48,22 @@ public class ExdeviceRankHook {
                 itemInfoFieldName = "meX";
                 break;
         }
+        if (this.classLoader == null) {
+            this.classLoader = classLoader;
+            hook(classLoader);
+        }
     }
 
-    public void hook(final ClassLoader classLoader) {
+    public static ExdeviceRankHook getInstance() {
+        return ExdeviceRankHookHolder.instance;
+    }
+
+    private static class ExdeviceRankHookHolder {
+        @SuppressLint("StaticFieldLeak")
+        private static final ExdeviceRankHook instance = new ExdeviceRankHook();
+    }
+
+    private void hook(final ClassLoader classLoader) {
         try {
             Class contextMenuClazz = XposedHelpers.findClass("com.tencent.mm.ui.base.n", classLoader);
             XposedHelpers.findAndHookMethod(contextMenuClazz, "a",
@@ -78,30 +98,38 @@ public class ExdeviceRankHook {
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     MenuItem menuItem = (MenuItem) param.args[0];
                     if (menuItem.getItemId() == 4 && listView != null) {
-                        String nickName = "";
-                        ListAdapter listAdapter = listView.getAdapter();
-                        int count = listAdapter.getCount();
-                        for (int i = 0; i < count; i++) {
-                            Object item = listAdapter.getItem(i);
-                            int type = listAdapter.getItemViewType(i);
-                            if (type == 1 && item != null) {
-                                String username = (String) XposedHelpers.getObjectField(
-                                        XposedHelpers.getObjectField(item, itemInfoFieldName),
-                                        "field_username");
-                                if (i == 1) {
-                                    nickName = username;
-                                    continue;
-                                }
-                                if (!nickName.equals(username)) {
-                                    View view = ((RelativeLayout) ((LinearLayout)
-                                            ((RelativeLayout) listAdapter.getView(i, null, null))
-                                                    .getChildAt(1))
-                                            .getChildAt(1)).getChildAt(1);
-                                    view.performClick();
-                                    view.destroyDrawingCache();
+
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ListAdapter listAdapter = listView.getAdapter();
+                                int rankNum = (int) XposedHelpers.getObjectField(
+                                        XposedHelpers.getObjectField(listAdapter.getItem(1),
+                                                itemInfoFieldName),
+                                        "field_ranknum");
+                                for (int i = 3; i < listAdapter.getCount() - 1; i++) {
+                                    if (i != rankNum + 2) {
+                                        int selfLikeState = (int) XposedHelpers.getObjectField(
+                                                XposedHelpers.getObjectField(listAdapter.getItem(i),
+                                                        itemInfoFieldName),
+                                                "field_selfLikeState");
+                                        if (selfLikeState == 0) {
+                                            final View view = ((RelativeLayout) ((LinearLayout)
+                                                    ((RelativeLayout) listAdapter.getView(i, null, null))
+                                                            .getChildAt(1))
+                                                    .getChildAt(1)).getChildAt(1);
+
+                                            ((Activity) listView.getContext()).runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    view.performClick();
+                                                }
+                                            });
+                                        }
+                                    }
                                 }
                             }
-                        }
+                        }).start();
                     }
                     super.afterHookedMethod(param);
                 }
@@ -116,6 +144,7 @@ public class ExdeviceRankHook {
                     super.afterHookedMethod(param);
                 }
             });
+
         } catch (Error | Exception e) {
             XposedBridge.log(e);
         }
