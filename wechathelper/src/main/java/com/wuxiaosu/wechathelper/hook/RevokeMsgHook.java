@@ -1,5 +1,6 @@
 package com.wuxiaosu.wechathelper.hook;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 
 import com.wuxiaosu.wechathelper.BuildConfig;
@@ -25,9 +26,39 @@ public class RevokeMsgHook {
     private static Object storageInsertClazz;
     private static XSharedPreferences xsp;
 
-    private static boolean disableRevoke;
+    private String insertClassName;
+    private String insertMethodName;
 
-    public static void hook(ClassLoader classLoader) {
+    private static boolean disableRevoke;
+    private ClassLoader classLoader;
+
+    private RevokeMsgHook() {
+
+    }
+
+    public static RevokeMsgHook getInstance() {
+        return RevokeMsgHook.ExdeviceRankHookHolder.instance;
+    }
+
+    private static class ExdeviceRankHookHolder {
+        @SuppressLint("StaticFieldLeak")
+        private static final RevokeMsgHook instance = new RevokeMsgHook();
+    }
+
+    public void init(ClassLoader classLoader, String versionName) {
+        insertClassName = "com.tencent.mm.storage.av";
+        insertMethodName = "b";
+        if (versionName.startsWith("6.6.6")) {
+            insertClassName = "com.tencent.mm.storage.ba";
+            insertMethodName = "b";
+        }
+        if (this.classLoader == null) {
+            this.classLoader = classLoader;
+            hook(classLoader);
+        }
+    }
+
+    private void hook(ClassLoader classLoader) {
         xsp = new XSharedPreferences(BuildConfig.APPLICATION_ID, SettingLabelView.DEFAULT_PREFERENCES_NAME);
         xsp.makeWorldReadable();
         try {
@@ -91,8 +122,8 @@ public class RevokeMsgHook {
 
         try {
             // insert method
-            Class clazz = XposedHelpers.findClass("com.tencent.mm.storage.av", classLoader);
-            XposedBridge.hookAllMethods(clazz, "b",
+            Class clazz = XposedHelpers.findClass(insertClassName, classLoader);
+            XposedBridge.hookAllMethods(clazz, insertMethodName,
                     new XC_MethodHook() {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {

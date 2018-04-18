@@ -1,7 +1,6 @@
 package com.wuxiaosu.wechathelper.hook;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -12,6 +11,10 @@ import android.widget.RelativeLayout;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Consumer;
 
 /**
  * Created by su on 2018/03/19.
@@ -43,9 +46,12 @@ public class ExdeviceRankHook {
             case "6.6.3":
                 itemInfoFieldName = "lZj";
                 break;
-            default:
             case "6.6.5":
                 itemInfoFieldName = "meX";
+                break;
+            default:
+            case "6.6.6":
+                itemInfoFieldName = "mcf";
                 break;
         }
         if (this.classLoader == null) {
@@ -53,6 +59,8 @@ public class ExdeviceRankHook {
             hook(classLoader);
         }
     }
+
+    private long startTime = 0;
 
     public static ExdeviceRankHook getInstance() {
         return ExdeviceRankHookHolder.instance;
@@ -94,19 +102,22 @@ public class ExdeviceRankHook {
             Class listenerClazz = XposedHelpers.findClass("com.tencent.mm.plugin.exdevice.ui.ExdeviceRankInfoUI$20", classLoader);
 
             XposedHelpers.findAndHookMethod(listenerClazz, "onMMMenuItemSelected", MenuItem.class, int.class, new XC_MethodHook() {
+                @SuppressLint("CheckResult")
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     MenuItem menuItem = (MenuItem) param.args[0];
                     if (menuItem.getItemId() == 4 && listView != null) {
-
-                        new Thread(new Runnable() {
+                        startTime = System.currentTimeMillis();
+                        XposedBridge.log(" --- >> like start");
+                        Observable.create(new ObservableOnSubscribe<View>() {
                             @Override
-                            public void run() {
+                            public void subscribe(ObservableEmitter<View> emitter) {
                                 ListAdapter listAdapter = listView.getAdapter();
                                 int rankNum = (int) XposedHelpers.getObjectField(
                                         XposedHelpers.getObjectField(listAdapter.getItem(1),
                                                 itemInfoFieldName),
                                         "field_ranknum");
+                                XposedBridge.log(" --- >> for start - > " + (System.currentTimeMillis() - startTime));
                                 for (int i = 3; i < listAdapter.getCount() - 1; i++) {
                                     if (i != rankNum + 2) {
                                         int selfLikeState = (int) XposedHelpers.getObjectField(
@@ -114,22 +125,30 @@ public class ExdeviceRankHook {
                                                         itemInfoFieldName),
                                                 "field_selfLikeState");
                                         if (selfLikeState == 0) {
-                                            final View view = ((RelativeLayout) ((LinearLayout)
+                                            // 没赞过的
+                                            XposedBridge.log(" --- >> get view start " + i + " - > " + (System.currentTimeMillis() - startTime));
+
+                                            View view = ((RelativeLayout) ((LinearLayout)
                                                     ((RelativeLayout) listAdapter.getView(i, null, null))
                                                             .getChildAt(1))
                                                     .getChildAt(1)).getChildAt(1);
 
-                                            ((Activity) listView.getContext()).runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    view.performClick();
-                                                }
-                                            });
+                                            XposedBridge.log(" --- >> get view done " + i + " - > " + (System.currentTimeMillis() - startTime) + "  " + view);
+
+                                            emitter.onNext(view);
                                         }
                                     }
                                 }
                             }
-                        }).start();
+                        }).subscribe(new Consumer<View>() {
+                            @Override
+                            public void accept(View view) {
+                                XposedBridge.log(" --- >> click start - > " + (System.currentTimeMillis() - startTime) + "  " + view);
+                                view.callOnClick();
+                                view.destroyDrawingCache();
+                                XposedBridge.log(" --- >> click done - > " + (System.currentTimeMillis() - startTime) + "  " + view);
+                            }
+                        });
                     }
                     super.afterHookedMethod(param);
                 }
@@ -137,6 +156,7 @@ public class ExdeviceRankHook {
 
             final Class exdeviceRankInfoUIClazz = XposedHelpers.findClass("com.tencent.mm.plugin.exdevice.ui.ExdeviceRankInfoUI", classLoader);
             XposedHelpers.findAndHookMethod(exdeviceRankInfoUIClazz, "initView", new XC_MethodHook() {
+
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     listView = (ListView) XposedHelpers.callStaticMethod(exdeviceRankInfoUIClazz,
@@ -144,7 +164,6 @@ public class ExdeviceRankHook {
                     super.afterHookedMethod(param);
                 }
             });
-
         } catch (Error | Exception e) {
             XposedBridge.log(e);
         }

@@ -57,7 +57,7 @@ public class MainActivity extends BaseActivity {
     RadioGroup rlStep;
 
     private final String[] wechatSupportVersions =
-            new String[]{"6.6.0", "6.6.1", "6.6.2", "6.6.3", "6.6.5"};
+            new String[]{"6.6.0", "6.6.1", "6.6.2", "6.6.3", "6.6.5", "6.6.6"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

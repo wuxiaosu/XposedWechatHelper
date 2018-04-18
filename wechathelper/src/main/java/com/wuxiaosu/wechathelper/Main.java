@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 
 import com.wuxiaosu.wechathelper.hook.EmojiGameHook;
 import com.wuxiaosu.wechathelper.hook.ExdeviceRankHook;
+import com.wuxiaosu.wechathelper.hook.LauncherUIHook;
 import com.wuxiaosu.wechathelper.hook.MoneyHook;
 import com.wuxiaosu.wechathelper.hook.RevokeMsgHook;
 import com.wuxiaosu.wechathelper.hook.StepHook;
@@ -96,8 +97,10 @@ public class Main implements IXposedHookLoadPackage {
         new EmojiGameHook(versionName).hook(classLoader);
         new MoneyHook(versionName).hook(classLoader);
         new UIHook(versionName).hook(classLoader);
+        LauncherUIHook.getInstance().init(classLoader, versionName);
         ExdeviceRankHook.getInstance().init(classLoader, versionName);
-        RevokeMsgHook.hook(classLoader);
+        RevokeMsgHook.getInstance().init(classLoader, versionName);
+//        XLogHook.getInstance().init(classLoader, versionName);
     }
 
     private String getVersionName(Context context, String pkgName) {

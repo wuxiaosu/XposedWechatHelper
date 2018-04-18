@@ -89,7 +89,6 @@ public class UIHook {
                 adapterClassName = "com.tencent.mm.ui.w$a";
                 vMethodName = "xe";
                 break;
-            default:
             case "6.6.5":
                 iconId = new int[]{2131165910, 2131165913, 2131165914, 2131165915};
                 wClassName = "com.tencent.mm.ui.w";
@@ -101,6 +100,20 @@ public class UIHook {
                 myFragmentName = "com.tencent.mm.ui.y";
                 adapterClassName = "com.tencent.mm.ui.w$a";
                 vMethodName = "xw";
+                break;
+            default:
+            case "6.6.6":
+                iconId = new int[]{2131165929, 2131165932, 2131165933, 2131165934};
+                wClassName = "com.tencent.mm.ui.w";
+                wFieldName = "yrA";
+                wHashMap.put("Lcom/google/android/exoplayer2/f/e/b;", 0);
+                wHashMap.put("Lcom/google/android/exoplayer2/f/d/b;", 1);
+                wHashMap.put("Lcom/google/android/exoplayer2/f/e/a$a;", 2);
+
+                discoverFragmentName = "com.tencent.mm.ui.h";
+                myFragmentName = "com.tencent.mm.ui.y";
+                adapterClassName = "com.tencent.mm.ui.w$a";
+                vMethodName = "xz";
                 break;
         }
     }

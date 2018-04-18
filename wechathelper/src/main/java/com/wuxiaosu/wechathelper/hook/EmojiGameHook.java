@@ -40,10 +40,14 @@ public class EmojiGameHook {
                 clazzName = "com.tencent.mm.sdk.platformtools.bh";
                 methodName = "eF";
                 break;
-            default:
             case "6.6.5":
                 clazzName = "com.tencent.mm.sdk.platformtools.bi";
                 methodName = "eI";
+                break;
+            default:
+            case "6.6.6":
+                clazzName = "com.tencent.mm.sdk.platformtools.bh";
+                methodName = "eE";
                 break;
         }
     }
