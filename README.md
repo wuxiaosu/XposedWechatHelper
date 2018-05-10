@@ -7,6 +7,11 @@ Xposed 微信辅助模块，实现消息防撤回、模拟位置、运动步数�
 ## 下载
 - release from [github](https://github.com/wuxiaosu/XposedWechatHelper/releases) 
 - release from [酷安](https://www.coolapk.com/apk/180057) 
+## v1.08 
+新增  
+支持MIUI双开；  
+优化  
+隐藏“发现页”后部分界面闪退；
 ## v1.07 
 更新  
 支持微信 6.6.6；  
