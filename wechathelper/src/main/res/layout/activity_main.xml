@@ -21,6 +21,8 @@
             <com.wuxiaosu.widget.SettingLabelView
                 android:id="@+id/slv_hide_icon"
                 style="@style/SettingLayout"
+                app:external_path="@string/external_path"
+                app:is_external="true"
                 app:label_text="隐藏图标"
                 app:preferences_key="@string/pre_key_hide_icon"
                 app:subheading_text="隐藏图标后可以从 Xposed 模块中打开应用" />
@@ -28,6 +30,8 @@
             <com.wuxiaosu.widget.SettingLabelView
                 style="@style/SettingLayout"
                 app:contact_view="@id/ll_location"
+                app:external_path="@string/external_path"
+                app:is_external="true"
                 app:label_text="模拟定位"
                 app:preferences_key="@string/pre_key_fake_location" />
 
@@ -85,6 +89,8 @@
             <com.wuxiaosu.widget.SettingLabelView
                 style="@style/SettingLayout"
                 app:contact_view="@id/ll_money"
+                app:external_path="@string/external_path"
+                app:is_external="true"
                 app:label_text="零钱修改"
                 app:preferences_key="@string/pre_key_fake_money" />
 
@@ -112,6 +118,8 @@
             <com.wuxiaosu.widget.SettingLabelView
                 style="@style/SettingLayout"
                 app:contact_view="@id/rl_morra"
+                app:external_path="@string/external_path"
+                app:is_external="true"
                 app:label_text="猜拳结果"
                 app:preferences_key="@string/pre_key_fake_morra" />
 
@@ -140,6 +148,8 @@
             <com.wuxiaosu.widget.SettingLabelView
                 style="@style/SettingLayout"
                 app:contact_view="@id/rl_dice"
+                app:external_path="@string/external_path"
+                app:is_external="true"
                 app:label_text="骰子点数"
                 app:preferences_key="@string/pre_key_fake_dice" />
 
@@ -184,6 +194,8 @@
                 style="@style/SettingLayout"
                 android:background="@color/white"
                 app:contact_view="@id/rl_step"
+                app:external_path="@string/external_path"
+                app:is_external="true"
                 app:label_text="步数修改"
                 app:preferences_key="@string/pre_key_fake_step" />
 
@@ -216,20 +228,26 @@
 
             <com.wuxiaosu.widget.SettingLabelView
                 style="@style/SettingLayout"
+                app:external_path="@string/external_path"
+                app:is_external="true"
                 app:label_text="消息防撤回"
                 app:preferences_key="@string/pre_key_disable_revoke" />
 
             <com.wuxiaosu.widget.SettingLabelView
                 style="@style/SettingLayout"
+                app:external_path="@string/external_path"
+                app:is_external="true"
                 app:label_text="修改首页菜单"
                 app:preferences_key="@string/pre_key_fake_launcher_menu"
                 app:subheading_text="设置改变需重启微信" />
 
             <com.wuxiaosu.widget.SettingLabelView
                 style="@style/SettingLayout"
+                app:external_path="@string/external_path"
+                app:is_external="true"
                 app:label_text="隐藏“发现页”"
                 app:preferences_key="@string/pre_key_hide_discover"
-                app:subheading_text="需重启微信，会导致部分跳转闪退，慎用" />
+                app:subheading_text="设置改变需重启微信" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>

@@ -18,6 +18,7 @@
     <string name="pre_key_fake_launcher_menu">fake_launcher_menu</string>
 
 
+    <string name="external_path">wechathelper</string>
     <string name="action_search">搜索</string>
     <string name="action_about">关于</string>
     <string name="app_description">微信辅助</string>

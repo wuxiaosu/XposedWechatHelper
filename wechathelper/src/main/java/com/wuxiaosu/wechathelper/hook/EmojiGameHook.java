@@ -1,10 +1,9 @@
 package com.wuxiaosu.wechathelper.hook;
 
-import com.wuxiaosu.wechathelper.BuildConfig;
-import com.wuxiaosu.widget.SettingLabelView;
+import com.wuxiaosu.wechathelper.utils.Constant;
+import com.wuxiaosu.widget.utils.PropertiesUtils;
 
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedHelpers;
 
 /**
@@ -13,7 +12,6 @@ import de.robv.android.xposed.XposedHelpers;
  */
 
 public class EmojiGameHook {
-    private XSharedPreferences xsp;
 
     private boolean fakeMorra;
     private String morra;
@@ -53,8 +51,6 @@ public class EmojiGameHook {
     }
 
     public void hook(ClassLoader classLoader) {
-        xsp = new XSharedPreferences(BuildConfig.APPLICATION_ID, SettingLabelView.DEFAULT_PREFERENCES_NAME);
-        xsp.makeWorldReadable();
         try {
             Class clazz = XposedHelpers.findClass(clazzName, classLoader);
             XposedHelpers.findAndHookMethod(clazz, methodName, int.class, int.class, new XC_MethodHook() {
@@ -85,10 +81,9 @@ public class EmojiGameHook {
     }
 
     private void reload() {
-        xsp.reload();
-        fakeMorra = xsp.getBoolean("fake_morra", false);
-        fakeDice = xsp.getBoolean("fake_dice", false);
-        morra = xsp.getString("morra", "0");
-        dice = xsp.getString("dice", "0");
+        fakeMorra = Boolean.valueOf(PropertiesUtils.getValue(Constant.PRO_FILE, "fake_morra", "false"));
+        fakeDice = Boolean.valueOf(PropertiesUtils.getValue(Constant.PRO_FILE, "fake_dice", "false"));
+        morra = PropertiesUtils.getValue(Constant.PRO_FILE, "morra", "0");
+        dice = PropertiesUtils.getValue(Constant.PRO_FILE, "dice", "0");
     }
 }

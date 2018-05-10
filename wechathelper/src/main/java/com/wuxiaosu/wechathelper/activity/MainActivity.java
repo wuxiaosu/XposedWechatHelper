@@ -1,14 +1,17 @@
 package com.wuxiaosu.wechathelper.activity;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ComponentName;
-import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
@@ -28,14 +31,14 @@ import android.widget.Toast;
 import com.wuxiaosu.wechathelper.BuildConfig;
 import com.wuxiaosu.wechathelper.R;
 import com.wuxiaosu.wechathelper.base.BaseActivity;
+import com.wuxiaosu.wechathelper.utils.Constant;
 import com.wuxiaosu.widget.SettingLabelView;
+import com.wuxiaosu.widget.utils.PropertiesUtils;
 
 import java.util.Arrays;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
-
 
 public class MainActivity extends BaseActivity {
 
@@ -59,27 +62,34 @@ public class MainActivity extends BaseActivity {
     private final String[] wechatSupportVersions =
             new String[]{"6.6.0", "6.6.1", "6.6.2", "6.6.3", "6.6.5", "6.6.6"};
 
+    private final static int EXTERNAL_STORAGE_REQUEST_CODE = 999;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+
         getToolbar().setNavigationIcon(null);
 
         showModuleActiveInfo(false);
-        initView();
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            showPermissionDialog();
+        } else {
+            initView();
+        }
     }
 
-    private void initView() {
-        SharedPreferences sharedPreferences =
-                getSharedPreferences(SettingLabelView.DEFAULT_PREFERENCES_NAME, Context.MODE_WORLD_READABLE);
 
-        bindPreferences(etLatitude, sharedPreferences, R.string.pre_key_latitude, null);
-        bindPreferences(etLongitude, sharedPreferences, R.string.pre_key_longitude, null);
-        bindPreferences(etMoney, sharedPreferences, R.string.pre_key_money, "0.00");
-        bindPreferences(rlDice, sharedPreferences, R.string.pre_key_dice, "0");
-        bindPreferences(rlMorra, sharedPreferences, R.string.pre_key_morra, "0");
-        bindPreferences(rlStep, sharedPreferences, R.string.pre_key_step, "2");
+    private void initView() {
+
+        bindProperties(etLatitude, Constant.PRO_FILE, R.string.pre_key_latitude, null);
+        bindProperties(etLongitude, Constant.PRO_FILE, R.string.pre_key_longitude, null);
+        bindProperties(etMoney, Constant.PRO_FILE, R.string.pre_key_money, "0.00");
+        bindProperties(rlDice, Constant.PRO_FILE, R.string.pre_key_dice, "0");
+        bindProperties(rlMorra, Constant.PRO_FILE, R.string.pre_key_morra, "0");
+        bindProperties(rlStep, Constant.PRO_FILE, R.string.pre_key_step, "2");
 
         slvHideIcon.setCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -87,6 +97,27 @@ public class MainActivity extends BaseActivity {
                 hideLauncherIcon(isChecked);
             }
         });
+    }
+
+    private void showPermissionDialog() {
+        AlertDialog alertDialog = new AlertDialog.Builder(this)
+                .setMessage("需要存储卡读写权限来保存应用配置")
+                .setNegativeButton("不用了", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MainActivity.this.finish();
+                    }
+                }).setPositiveButton("好", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                EXTERNAL_STORAGE_REQUEST_CODE);
+                    }
+                })
+                .setCancelable(false)
+                .create();
+        alertDialog.show();
     }
 
     @OnClick({R.id.iv_location})
@@ -105,9 +136,10 @@ public class MainActivity extends BaseActivity {
         return new ComponentName(MainActivity.this, "com.wuxiaosu.wechathelper.activity.MainActivity_Alias");
     }
 
-    private void bindPreferences(View view, final SharedPreferences sharedPreferences, final int preStrResId, Object defaultValue) {
+    private void bindProperties(View view, final String properties, final int preStrResId, Object defaultValue) {
+
         if (view instanceof EditText) {
-            String temp = sharedPreferences.getString(getString(preStrResId), (String) defaultValue);
+            String temp = PropertiesUtils.getValue(properties, getString(preStrResId), (String) defaultValue);
             ((EditText) view).setText(temp);
             ((EditText) view).addTextChangedListener(new TextWatcher() {
                 @Override
@@ -122,15 +154,16 @@ public class MainActivity extends BaseActivity {
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    sharedPreferences.edit().putString(getString(preStrResId), s.toString()).apply();
+                    PropertiesUtils.putValue(properties, getString(preStrResId), s.toString());
                 }
             });
             return;
         }
         if (view instanceof RadioGroup) {
-            String temp = sharedPreferences.getString(getString(preStrResId), (String) defaultValue);
+            String temp = PropertiesUtils.getValue(properties, getString(preStrResId), (String) defaultValue);
+
             if (!TextUtils.isEmpty(temp)) {
-                sharedPreferences.edit().putString(getString(preStrResId), temp).apply();
+                PropertiesUtils.putValue(properties, getString(preStrResId), temp);
                 for (int i = 0; i < ((RadioGroup) view).getChildCount(); i++) {
                     if (((RadioGroup) view).getChildAt(i).getContentDescription().toString().equals(temp)) {
                         ((RadioButton) ((RadioGroup) view).getChildAt(i)).setChecked(true);
@@ -141,7 +174,7 @@ public class MainActivity extends BaseActivity {
             ((RadioGroup) view).setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(RadioGroup group, int checkedId) {
-                    sharedPreferences.edit().putString(getString(preStrResId), findViewById(checkedId).getContentDescription().toString()).apply();
+                    PropertiesUtils.putValue(properties, getString(preStrResId), findViewById(checkedId).getContentDescription().toString());
                 }
             });
         }
@@ -188,12 +221,19 @@ public class MainActivity extends BaseActivity {
         mTvInfo.setText(getString(R.string.app_description)
                 + ",当前版本已支持\n微信："
                 + Arrays.toString(wechatSupportVersions)
+                + getContactInfo()
                 + "\n更多详情：");
         AlertDialog alertDialog = new AlertDialog.Builder(this)
                 .setTitle("关于")
                 .setView(view)
                 .create();
         alertDialog.show();
+    }
+
+    private String getContactInfo() {
+        return "\nQQ交流群：[123320001]\n" +
+                "微信进群加微信：[CSYJZF]\n" +
+                "一键点赞问题反馈微信：[WUXIAOSU45]";
     }
 
     private void sendURLIntent(String url) {
@@ -212,6 +252,17 @@ public class MainActivity extends BaseActivity {
     private void showModuleActiveInfo(boolean isModuleActive) {
         if (!isModuleActive) {
             Toast.makeText(this, "模块未激活", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == EXTERNAL_STORAGE_REQUEST_CODE && grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            initView();
+        } else {
+            this.finish();
         }
     }
 }

@@ -1,10 +1,9 @@
 package com.wuxiaosu.wechathelper.hook;
 
-import com.wuxiaosu.wechathelper.BuildConfig;
-import com.wuxiaosu.widget.SettingLabelView;
+import com.wuxiaosu.wechathelper.utils.Constant;
+import com.wuxiaosu.widget.utils.PropertiesUtils;
 
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
@@ -14,7 +13,6 @@ import de.robv.android.xposed.XposedHelpers;
  */
 
 public class TencentLocationManagerHook {
-    private XSharedPreferences xsp;
 
     private boolean fakeLocation;
     private String latitude;
@@ -23,8 +21,6 @@ public class TencentLocationManagerHook {
     private String methodName;
 
     public TencentLocationManagerHook(String versionName) {
-        xsp = new XSharedPreferences(BuildConfig.APPLICATION_ID, SettingLabelView.DEFAULT_PREFERENCES_NAME);
-        xsp.makeWorldReadable();
 
         //6.6.1 6.6.0 通过
         if (versionName.startsWith("6.6")) {        // 6.6.x
@@ -62,9 +58,8 @@ public class TencentLocationManagerHook {
 
 
     private void reload() {
-        xsp.reload();
-        fakeLocation = xsp.getBoolean("fake_location", false);
-        latitude = xsp.getString("latitude", "39.908860");
-        longitude = xsp.getString("longitude", "116.397390");
+        fakeLocation = Boolean.valueOf(PropertiesUtils.getValue(Constant.PRO_FILE, "fake_location", "false"));
+        latitude = PropertiesUtils.getValue(Constant.PRO_FILE, "latitude", "39.908860");
+        longitude = PropertiesUtils.getValue(Constant.PRO_FILE, "longitude", "116.397390");
     }
 }

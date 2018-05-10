@@ -19,6 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep class android.support.v7.widget.**{*;}
+-keep class android.support.v4.animation.**{*;}
+
 -keep class com.wuxiaosu.wechathelper.activity.MainActivity {
     private void showModuleActiveInfo(...);
 }
@@ -35,3 +38,5 @@
 
 -dontwarn  org.eclipse.jdt.annotation.**
 -dontwarn  c.t.**
+-dontwarn  android.support.v4.animation.**
+-dontwarn  android.support.v7.widget.**

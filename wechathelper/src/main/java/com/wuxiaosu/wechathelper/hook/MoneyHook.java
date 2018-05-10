@@ -3,7 +3,9 @@ package com.wuxiaosu.wechathelper.hook;
 import android.widget.TextView;
 
 import com.wuxiaosu.wechathelper.BuildConfig;
+import com.wuxiaosu.wechathelper.utils.Constant;
 import com.wuxiaosu.widget.SettingLabelView;
+import com.wuxiaosu.widget.utils.PropertiesUtils;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
@@ -18,7 +20,6 @@ import static de.robv.android.xposed.XposedHelpers.getObjectField;
  */
 
 public class MoneyHook {
-    private static XSharedPreferences xsp;
 
     private static boolean fakeMoney;
     private static String money;
@@ -72,14 +73,11 @@ public class MoneyHook {
     }
 
     private void reload() {
-        xsp.reload();
-        money = xsp.getString("money", "0.00");
-        fakeMoney = xsp.getBoolean("fake_money", false);
+        money = PropertiesUtils.getValue(Constant.PRO_FILE, "money", "0.00");
+        fakeMoney = Boolean.valueOf(PropertiesUtils.getValue(Constant.PRO_FILE, "fake_money", "false"));
     }
 
     public void hook(ClassLoader classLoader) {
-        xsp = new XSharedPreferences(BuildConfig.APPLICATION_ID, SettingLabelView.DEFAULT_PREFERENCES_NAME);
-        xsp.makeWorldReadable();
         try {
             Class clazz = XposedHelpers.findClass("com.tencent.mm.plugin.mall.ui.MallIndexUI", classLoader);
             if (clazz != null) {

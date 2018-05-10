@@ -4,7 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 
 import com.wuxiaosu.wechathelper.BuildConfig;
+import com.wuxiaosu.wechathelper.utils.Constant;
 import com.wuxiaosu.widget.SettingLabelView;
+import com.wuxiaosu.widget.utils.PropertiesUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -24,7 +26,6 @@ public class RevokeMsgHook {
 
     private static Map<Long, Object> msgCacheMap = new HashMap<>();
     private static Object storageInsertClazz;
-    private static XSharedPreferences xsp;
 
     private String insertClassName;
     private String insertMethodName;
@@ -59,8 +60,6 @@ public class RevokeMsgHook {
     }
 
     private void hook(ClassLoader classLoader) {
-        xsp = new XSharedPreferences(BuildConfig.APPLICATION_ID, SettingLabelView.DEFAULT_PREFERENCES_NAME);
-        xsp.makeWorldReadable();
         try {
             Class clazz = XposedHelpers.findClass("com.tencent.wcdb.database.SQLiteDatabase", classLoader);
             XposedHelpers.findAndHookMethod(clazz, "updateWithOnConflict",
@@ -144,10 +143,8 @@ public class RevokeMsgHook {
         }
     }
 
-
     private static void reload() {
-        xsp.reload();
-        disableRevoke = xsp.getBoolean("disable_revoke", false);
+        disableRevoke = Boolean.valueOf(PropertiesUtils.getValue(Constant.PRO_FILE, "disable_revoke", "false"));
     }
 
     private static void handleMessageRecall(ContentValues contentValues) {

@@ -1,10 +1,9 @@
 package com.wuxiaosu.wechathelper.hook;
 
-import com.wuxiaosu.wechathelper.BuildConfig;
-import com.wuxiaosu.widget.SettingLabelView;
+import com.wuxiaosu.wechathelper.utils.Constant;
+import com.wuxiaosu.widget.utils.PropertiesUtils;
 
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
@@ -14,13 +13,10 @@ import de.robv.android.xposed.XposedHelpers;
  */
 
 public class StepHook {
-    private static XSharedPreferences xsp;
     private static boolean fakeStep;
     private static String step;
 
     public static void hook(ClassLoader classLoader) {
-        xsp = new XSharedPreferences(BuildConfig.APPLICATION_ID, SettingLabelView.DEFAULT_PREFERENCES_NAME);
-        xsp.makeWorldReadable();
 
         try {
             //4.4 nexus 通过
@@ -43,8 +39,7 @@ public class StepHook {
 
 
     private static void reload() {
-        xsp.reload();
-        fakeStep = xsp.getBoolean("fake_step", false);
-        step = xsp.getString("step", "2");
+        fakeStep = Boolean.valueOf(PropertiesUtils.getValue(Constant.PRO_FILE, "fake_step", "false"));
+        step = PropertiesUtils.getValue(Constant.PRO_FILE, "step", "2");
     }
 }

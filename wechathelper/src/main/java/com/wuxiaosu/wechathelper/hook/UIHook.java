@@ -1,21 +1,22 @@
 package com.wuxiaosu.wechathelper.hook;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.wuxiaosu.wechathelper.BuildConfig;
-import com.wuxiaosu.widget.SettingLabelView;
+import com.wuxiaosu.wechathelper.utils.Constant;
+import com.wuxiaosu.widget.utils.PropertiesUtils;
 
 import java.util.HashMap;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
-import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
@@ -24,7 +25,6 @@ import de.robv.android.xposed.XposedHelpers;
  */
 
 public class UIHook {
-    private XSharedPreferences xsp;
 
     private boolean hideDiscover;
     private String wClassName;
@@ -38,6 +38,7 @@ public class UIHook {
     private String adapterClassName;
     private String vMethodName;
 
+    private String[] switchMethodName;
 
     public UIHook(String versionName) {
         switch (versionName) {
@@ -52,6 +53,9 @@ public class UIHook {
                 myFragmentName = "com.tencent.mm.ui.z";
                 adapterClassName = "com.tencent.mm.ui.x$a";
                 vMethodName = "ES";
+
+                switchMethodName = new String[]{"Xa", "Cj"};
+
                 break;
             case "6.6.1":
                 iconId = new int[]{2131165910, 2131165913, 2131165914, 2131165915};
@@ -64,6 +68,8 @@ public class UIHook {
                 myFragmentName = "com.tencent.mm.ui.z";
                 adapterClassName = "com.tencent.mm.ui.x$a";
                 vMethodName = "Fb";
+
+                switchMethodName = new String[]{"Xl", "Cq"};
                 break;
             case "6.6.2":
                 iconId = new int[]{2131165910, 2131165913, 2131165914, 2131165915};
@@ -76,6 +82,8 @@ public class UIHook {
                 myFragmentName = "com.tencent.mm.ui.y";
                 adapterClassName = "com.tencent.mm.ui.w$a";
                 vMethodName = "xe";
+
+                switchMethodName = new String[]{"Yp", "DW"};
                 break;
             case "6.6.3":
                 iconId = new int[]{2131165910, 2131165913, 2131165914, 2131165915};
@@ -88,6 +96,8 @@ public class UIHook {
                 myFragmentName = "com.tencent.mm.ui.y";
                 adapterClassName = "com.tencent.mm.ui.w$a";
                 vMethodName = "xe";
+
+                switchMethodName = new String[]{"Yp", "DW"};
                 break;
             case "6.6.5":
                 iconId = new int[]{2131165910, 2131165913, 2131165914, 2131165915};
@@ -100,6 +110,8 @@ public class UIHook {
                 myFragmentName = "com.tencent.mm.ui.y";
                 adapterClassName = "com.tencent.mm.ui.w$a";
                 vMethodName = "xw";
+
+                switchMethodName = new String[]{"YW", "Ep"};
                 break;
             default:
             case "6.6.6":
@@ -114,14 +126,14 @@ public class UIHook {
                 myFragmentName = "com.tencent.mm.ui.y";
                 adapterClassName = "com.tencent.mm.ui.w$a";
                 vMethodName = "xz";
+
+                switchMethodName = new String[]{"ZN", "EB"};
                 break;
         }
     }
 
     public void hook(final ClassLoader classLoader) {
-        xsp = new XSharedPreferences(BuildConfig.APPLICATION_ID, SettingLabelView.DEFAULT_PREFERENCES_NAME);
-        xsp.makeWorldReadable();
-        hideDiscover = xsp.getBoolean("hide_discover", false);
+        hideDiscover = Boolean.valueOf(PropertiesUtils.getValue(Constant.PRO_FILE, "hide_discover", "false"));
 
         if (!hideDiscover) {
             return;
@@ -130,6 +142,15 @@ public class UIHook {
         try {
             Class clazz = XposedHelpers.findClass(wClassName, classLoader);
             XposedHelpers.setStaticObjectField(clazz, wFieldName, wHashMap);
+
+            XposedHelpers.findAndHookMethod(clazz, switchMethodName[0],
+                    String.class, new XC_MethodReplacement() {
+                        @Override
+                        protected Object replaceHookedMethod(MethodHookParam param) {
+                            XposedHelpers.callMethod(param.thisObject, switchMethodName[1], 0);
+                            return null;
+                        }
+                    });
 
             // replace fragment
             Class baseBundleClazz = XposedHelpers.findClass("android.os.BaseBundle", classLoader);

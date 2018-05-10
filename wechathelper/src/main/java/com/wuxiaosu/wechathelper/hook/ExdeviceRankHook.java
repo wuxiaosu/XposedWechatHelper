@@ -111,7 +111,7 @@ public class ExdeviceRankHook {
                         XposedBridge.log(" --- >> like start");
                         Observable.create(new ObservableOnSubscribe<View>() {
                             @Override
-                            public void subscribe(ObservableEmitter<View> emitter) {
+                            public void subscribe(ObservableEmitter<View> emitter) throws InterruptedException {
                                 ListAdapter listAdapter = listView.getAdapter();
                                 int rankNum = (int) XposedHelpers.getObjectField(
                                         XposedHelpers.getObjectField(listAdapter.getItem(1),
