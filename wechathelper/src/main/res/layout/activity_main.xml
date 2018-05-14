@@ -248,6 +248,14 @@
                 app:label_text="隐藏“发现页”"
                 app:preferences_key="@string/pre_key_hide_discover"
                 app:subheading_text="设置改变需重启微信" />
+
+            <com.wuxiaosu.widget.SettingLabelView
+                style="@style/SettingLayout"
+                app:external_path="@string/external_path"
+                app:is_external="true"
+                app:label_text="微信登录自动确认"
+                app:preferences_key="@string/pre_key_pc_auto_login"
+                app:subheading_text="设置改变需重启微信" />
         </LinearLayout>
     </ScrollView>
 </FrameLayout>
