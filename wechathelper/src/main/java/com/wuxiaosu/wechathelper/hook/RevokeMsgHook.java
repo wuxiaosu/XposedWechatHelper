@@ -3,18 +3,18 @@ package com.wuxiaosu.wechathelper.hook;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 
-import com.wuxiaosu.wechathelper.BuildConfig;
 import com.wuxiaosu.wechathelper.utils.Constant;
-import com.wuxiaosu.widget.SettingLabelView;
 import com.wuxiaosu.widget.utils.PropertiesUtils;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
@@ -25,10 +25,9 @@ import de.robv.android.xposed.XposedHelpers;
 public class RevokeMsgHook {
 
     private static Map<Long, Object> msgCacheMap = new HashMap<>();
-    private static Object storageInsertClazz;
+    private static Object storageInsertObject;
 
-    private String insertClassName;
-    private String insertMethodName;
+    private static String insertMethodName;
 
     private static boolean disableRevoke;
     private ClassLoader classLoader;
@@ -47,12 +46,7 @@ public class RevokeMsgHook {
     }
 
     public void init(ClassLoader classLoader, String versionName) {
-        insertClassName = "com.tencent.mm.storage.av";
-        insertMethodName = "b";
-        if (versionName.startsWith("6.6.6")) {
-            insertClassName = "com.tencent.mm.storage.ba";
-            insertMethodName = "b";
-        }
+
         if (this.classLoader == null) {
             this.classLoader = classLoader;
             hook(classLoader);
@@ -120,24 +114,54 @@ public class RevokeMsgHook {
         }
 
         try {
-            // insert method
-            Class clazz = XposedHelpers.findClass(insertClassName, classLoader);
-            XposedBridge.hookAllMethods(clazz, insertMethodName,
-                    new XC_MethodHook() {
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                            storageInsertClazz = param.thisObject;
-                            Object msg = param.args[0];
-                            long msgId = -1;
-                            try {
-                                msgId = XposedHelpers.getLongField(msg, "field_msgId");
-                            } catch (Throwable e) {
-                                e.printStackTrace();
+            Class pluginMessengerFoundationClazz = XposedHelpers.findClass("com.tencent.mm.plugin.messenger.foundation.PluginMessengerFoundation", classLoader);
+            Field[] fields = pluginMessengerFoundationClazz.getDeclaredFields();
+            for (Field field : fields) {
+                if (field.getType().getName().startsWith("com.tencent.mm.plugin.messenger.foundation")) {
+                    //全凭感觉 下次要改再说
+                    Field[] fieldsFields = field.getType().getDeclaredFields();
+                    if (fieldsFields.length == 12) {
+                        for (Field fieldsField : fieldsFields) {
+                            Constructor[] constructors = fieldsField.getType().getConstructors();
+                            if (constructors.length == 1 && constructors[0].getParameterTypes().length == 3) {
+                                Class insertClass = fieldsField.getType();
+
+                                Method[] methods = insertClass.getDeclaredMethods();
+                                for (Method method : methods) {
+                                    if (method.getParameterTypes().length == 2
+                                            && method.getParameterTypes()[1] == boolean.class
+                                            && method.getReturnType() == long.class) {
+                                        insertMethodName = method.getName();
+
+                                        XposedBridge.hookAllMethods(insertClass, insertMethodName,
+                                                new XC_MethodHook() {
+                                                    @Override
+                                                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                                        storageInsertObject = param.thisObject;
+                                                        if (param.args.length == 2) {
+                                                            Object msg = param.args[0];
+                                                            long msgId = -1;
+                                                            try {
+                                                                msgId = XposedHelpers.getLongField(msg, "field_msgId");
+                                                            } catch (Throwable e) {
+                                                                e.printStackTrace();
+                                                            }
+                                                            msgCacheMap.put(msgId, msg);
+                                                        }
+                                                        super.afterHookedMethod(param);
+                                                    }
+                                                });
+
+                                        break;
+                                    }
+                                }
+                                break;
                             }
-                            msgCacheMap.put(msgId, msg);
-                            super.afterHookedMethod(param);
                         }
-                    });
+                        break;
+                    }
+                }
+            }
         } catch (Error | Exception e) {
             e.printStackTrace();
         }
@@ -156,6 +180,6 @@ public class RevokeMsgHook {
         XposedHelpers.setObjectField(msg, "field_content",
                 contentValues.getAsString("content") + "(已被阻止)");
         XposedHelpers.setLongField(msg, "field_createTime", createTime + 1L);
-        XposedHelpers.callMethod(storageInsertClazz, "b", msg, false);
+        XposedHelpers.callMethod(storageInsertObject, insertMethodName, msg, false);
     }
 }

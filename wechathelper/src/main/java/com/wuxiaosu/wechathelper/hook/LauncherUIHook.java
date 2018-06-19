@@ -4,9 +4,13 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.PopupWindow;
 
 import com.wuxiaosu.wechathelper.utils.Constant;
 import com.wuxiaosu.widget.utils.PropertiesUtils;
+
+import java.lang.reflect.Field;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -21,9 +25,7 @@ import static android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
 
 public class LauncherUIHook {
 
-    private boolean fakeLauncherMenu;
-
-    private int[] iconIds;
+    private int[] iconIds = new int[2];
 
     private LauncherUIHook() {
     }
@@ -31,27 +33,6 @@ public class LauncherUIHook {
     private ClassLoader classLoader;
 
     public void init(ClassLoader classLoader, String versionName) {
-        switch (versionName) {
-            case "6.6.0":
-                iconIds = new int[]{2131165958, 2131166039};
-                break;
-            case "6.6.1":
-                iconIds = new int[]{2131165967, 2131166048};
-                break;
-            case "6.6.2":
-                iconIds = new int[]{2131165967, 2131166048};
-                break;
-            case "6.6.3":
-                iconIds = new int[]{2131165967, 2131166048};
-                break;
-            case "6.6.5":
-                iconIds = new int[]{2131165967, 2131166048};
-                break;
-            default:
-            case "6.6.6":
-                iconIds = new int[]{2131165986, 2131166064};
-                break;
-        }
         if (this.classLoader == null) {
             this.classLoader = classLoader;
             hook(classLoader);
@@ -68,11 +49,13 @@ public class LauncherUIHook {
     }
 
     private void hook(final ClassLoader classLoader) {
-        fakeLauncherMenu = Boolean.valueOf(PropertiesUtils.getValue(Constant.PRO_FILE, "fake_launcher_menu", "false"));
+        boolean fakeLauncherMenu = Boolean.valueOf(PropertiesUtils.getValue(Constant.PRO_FILE, "fake_launcher_menu", "false"));
 
         if (!fakeLauncherMenu) {
             return;
         }
+
+        initItemClass(classLoader);
 
         try {
             Class clazz = XposedHelpers.findClass("com.tencent.mm.ui.LauncherUI", classLoader);
@@ -119,6 +102,85 @@ public class LauncherUIHook {
                     });
         } catch (Error | Exception e) {
             XposedBridge.log(e);
+        }
+    }
+
+
+    /**
+     * find item bean
+     *
+     * @param classLoader
+     */
+    private void initItemClass(final ClassLoader classLoader) {
+        try {
+            final Class homeUIClazz = XposedHelpers.findClass("com.tencent.mm.ui.HomeUI", classLoader);
+            final Class launcherUIClazz = XposedHelpers.findClass("com.tencent.mm.ui.LauncherUI", classLoader);
+
+            XposedHelpers.findAndHookMethod(launcherUIClazz, "onResume", new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    Object homeUIObject = null;
+                    Field[] launcherUIFields = launcherUIClazz.getFields();
+                    for (Field field : launcherUIFields) {
+                        if (field.getType() == homeUIClazz) {
+                            homeUIObject = XposedHelpers.getObjectField(param.thisObject, field.getName());
+                        }
+                    }
+                    Field[] homeUIFields = homeUIClazz.getDeclaredFields();
+                    for (Field homeUIField : homeUIFields) {
+                        Object object = XposedHelpers.getObjectField(homeUIObject, homeUIField.getName());
+                        if (object instanceof AdapterView.OnItemClickListener
+                                && object instanceof PopupWindow.OnDismissListener) {
+
+                            Class[] classes = object.getClass().getClasses();
+                            for (Class aClass : classes) {
+
+                                Field[] fields = aClass.getDeclaredFields();
+
+                                if (fields.length == 5) {
+                                    int intCount = 0;
+                                    int stringCount = 0;
+                                    for (Field field : fields) {
+                                        intCount = intCount + (field.getType() == int.class ? 1 : 0);
+                                        stringCount = stringCount + (field.getType() == String.class ? 1 : 0);
+                                    }
+                                    if (intCount == 3 && stringCount == 2) {
+                                        initIconIds(aClass);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    super.beforeHookedMethod(param);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * find icon id
+     *
+     * @param itemClass
+     */
+    private void initIconIds(final Class itemClass) {
+        try {
+            XposedBridge.hookAllConstructors(itemClass, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    int arg0 = (int) param.args[0];
+                    int iconId = (int) param.args[3];
+                    if (arg0 == 10) {
+                        iconIds[0] = iconId;
+                    } else if (arg0 == 20) {
+                        iconIds[1] = iconId;
+                    }
+                    super.beforeHookedMethod(param);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

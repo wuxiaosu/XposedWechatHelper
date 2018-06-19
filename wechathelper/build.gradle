@@ -6,8 +6,8 @@ android {
         applicationId "com.wuxiaosu.wechathelper"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 10
-        versionName "1.09"
+        versionCode 12
+        versionName "1.11"
     }
 
     signingConfigs {
@@ -22,6 +22,8 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
+            zipAlignEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
 
@@ -89,5 +91,5 @@ dependencies {
 }
 
 static def buildTime() {
-    return new Date().format("yyMMddHHss", TimeZone.getTimeZone("GMT+08"))
+    return new Date().format("yyMMddHHmm", TimeZone.getTimeZone("GMT+08"))
 }

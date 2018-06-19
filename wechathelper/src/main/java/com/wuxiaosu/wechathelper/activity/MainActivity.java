@@ -35,8 +35,6 @@ import com.wuxiaosu.wechathelper.utils.Constant;
 import com.wuxiaosu.widget.SettingLabelView;
 import com.wuxiaosu.widget.utils.PropertiesUtils;
 
-import java.util.Arrays;
-
 import butterknife.BindView;
 import butterknife.OnClick;
 
@@ -210,7 +208,7 @@ public class MainActivity extends BaseActivity {
         TextView mTvVersionName = view.findViewById(R.id.tv_version_name);
         TextView mTvInfo = view.findViewById(R.id.tv_info);
         final TextView mTvUrl = view.findViewById(R.id.tv_url);
-        mTvUrl.setText(Html.fromHtml("<a href=''>https://github.com/wuxiaosu/XposedWechatHelper</a>"));
+        mTvUrl.setText(Html.fromHtml("<a href=''>https://www.coolapk.com/apk/com.wuxiaosu.wechathelper</a>"));
         mTvUrl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -218,9 +216,7 @@ public class MainActivity extends BaseActivity {
             }
         });
         mTvVersionName.setText(getString(R.string.app_name) + " v" + BuildConfig.VERSION_NAME);
-        mTvInfo.setText(getString(R.string.app_description)
-                + ",当前版本已支持\n微信："
-                + Arrays.toString(wechatSupportVersions)
+        mTvInfo.setText("可以请作者喝杯豆浆"
                 + getContactInfo()
                 + "\n更多详情：");
         AlertDialog alertDialog = new AlertDialog.Builder(this)
@@ -231,9 +227,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private String getContactInfo() {
-        return "\nQQ交流群：[123320001]\n" +
-                "微信进群加微信：[CSYJZF]\n" +
-                "一键点赞问题反馈微信：[WUXIAOSU45]";
+        return "\nQ群：[123320001]\n" +
+                "微信群加：[CSYJZF]\n";
     }
 
     private void sendURLIntent(String url) {
@@ -252,6 +247,8 @@ public class MainActivity extends BaseActivity {
     private void showModuleActiveInfo(boolean isModuleActive) {
         if (!isModuleActive) {
             Toast.makeText(this, "模块未激活", Toast.LENGTH_SHORT).show();
+        } else {
+            showInfo();
         }
     }
 

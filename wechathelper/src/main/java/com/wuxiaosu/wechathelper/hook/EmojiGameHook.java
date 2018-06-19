@@ -1,7 +1,12 @@
 package com.wuxiaosu.wechathelper.hook;
 
+import android.annotation.SuppressLint;
+
 import com.wuxiaosu.wechathelper.utils.Constant;
 import com.wuxiaosu.widget.utils.PropertiesUtils;
+
+import java.lang.reflect.Method;
+import java.util.Random;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
@@ -17,40 +22,62 @@ public class EmojiGameHook {
     private String morra;
     private boolean fakeDice;
     private String dice;
-    private String methodName;
-    private String clazzName;
 
-    public EmojiGameHook(String versionName) {
-        switch (versionName) {
-            case "6.6.0":
-                clazzName = "com.tencent.mm.sdk.platformtools.bh";
-                methodName = "em";
-                break;
-            case "6.6.1":
-                clazzName = "com.tencent.mm.sdk.platformtools.bh";
-                methodName = "en";
-                break;
-            case "6.6.2":
-                clazzName = "com.tencent.mm.sdk.platformtools.bh";
-                methodName = "eF";
-                break;
-            case "6.6.3":
-                clazzName = "com.tencent.mm.sdk.platformtools.bh";
-                methodName = "eF";
-                break;
-            case "6.6.5":
-                clazzName = "com.tencent.mm.sdk.platformtools.bi";
-                methodName = "eI";
-                break;
-            default:
-            case "6.6.6":
-                clazzName = "com.tencent.mm.sdk.platformtools.bh";
-                methodName = "eE";
-                break;
+    private EmojiGameHook() {
+    }
+
+    private ClassLoader classLoader;
+
+    public void init(ClassLoader classLoader, String versionName) {
+        if (this.classLoader == null) {
+            this.classLoader = classLoader;
+            hook(classLoader);
         }
     }
 
-    public void hook(ClassLoader classLoader) {
+    public static EmojiGameHook getInstance() {
+        return EmojiGameHook.SingletonHolder.instance;
+    }
+
+    private static class SingletonHolder {
+        @SuppressLint("StaticFieldLeak")
+        private static final EmojiGameHook instance = new EmojiGameHook();
+    }
+
+    private void hook(final ClassLoader classLoader) {
+        try {
+            XposedHelpers.findAndHookMethod(Random.class, "nextInt", int.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    if ((int) param.args[0] < 10) {
+                        StackTraceElement[] traceElements = Thread.currentThread().getStackTrace();
+                        for (StackTraceElement traceElement : traceElements) {
+                            if (traceElement.getClassName().startsWith("com.tencent.mm.sdk.platformtools.")) {
+                                Method[] methods = XposedHelpers.findClass(traceElement.getClassName(), classLoader).getMethods();
+                                for (Method method : methods) {
+                                    if (method.getName().equals(traceElement.getMethodName())) {
+                                        if (method.getParameterTypes().length == 2) {
+                                            if (method.getParameterTypes()[0] == int.class
+                                                    && method.getParameterTypes()[1] == int.class
+                                                    && method.getReturnType() == int.class) {
+                                                hook(classLoader, traceElement.getClassName(), method.getName());
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    super.beforeHookedMethod(param);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void hook(final ClassLoader classLoader, String clazzName, String methodName) {
         try {
             Class clazz = XposedHelpers.findClass(clazzName, classLoader);
             XposedHelpers.findAndHookMethod(clazz, methodName, int.class, int.class, new XC_MethodHook() {

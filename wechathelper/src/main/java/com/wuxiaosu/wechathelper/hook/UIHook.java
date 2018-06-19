@@ -1,11 +1,16 @@
 package com.wuxiaosu.wechathelper.hook;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -13,12 +18,21 @@ import android.widget.TextView;
 import com.wuxiaosu.wechathelper.utils.Constant;
 import com.wuxiaosu.widget.utils.PropertiesUtils;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by su on 2018/03/16.
@@ -27,138 +41,80 @@ import de.robv.android.xposed.XposedHelpers;
 public class UIHook {
 
     private boolean hideDiscover;
-    private String wClassName;
-    private String wFieldName;
-    private HashMap wHashMap = new HashMap();
-
-    private int[] iconId;
 
     private String discoverFragmentName;
-    private String myFragmentName;
-    private String adapterClassName;
-    private String vMethodName;
+    private String meFragmentName;
 
-    private String[] switchMethodName;
+    private ClassLoader classLoader;
 
-    public UIHook(String versionName) {
+    private UIHook() {
+
+    }
+
+    public void init(ClassLoader classLoader, String versionName) {
         switch (versionName) {
             case "6.6.0":
-                iconId = new int[]{2131165901, 2131165904, 2131165905, 2131165906};
-                wClassName = "com.tencent.mm.ui.x";
-                wFieldName = "wHJ";
-                wHashMap.put("Lcom/tencent/mm/modelsns/e;", 0);
-                wHashMap.put("Lcom/tencent/mm/modelsns/b;", 1);
-                wHashMap.put("Lcom/tencent/mm/modelsns/d;", 2);
                 discoverFragmentName = "com.tencent.mm.ui.i";
-                myFragmentName = "com.tencent.mm.ui.z";
-                adapterClassName = "com.tencent.mm.ui.x$a";
-                vMethodName = "ES";
-
-                switchMethodName = new String[]{"Xa", "Cj"};
-
+                meFragmentName = "com.tencent.mm.ui.z";
                 break;
             case "6.6.1":
-                iconId = new int[]{2131165910, 2131165913, 2131165914, 2131165915};
-                wClassName = "com.tencent.mm.ui.x";
-                wFieldName = "wMd";
-                wHashMap.put("Lcom/tencent/mm/modelvideo/MMVideoView;", 0);
-                wHashMap.put("Lcom/tencent/mm/modelvideo/MMVideoView$1;", 1);
-                wHashMap.put("Lcom/tencent/mm/modelvideo/MMVideoView$a;", 2);
                 discoverFragmentName = "com.tencent.mm.ui.i";
-                myFragmentName = "com.tencent.mm.ui.z";
-                adapterClassName = "com.tencent.mm.ui.x$a";
-                vMethodName = "Fb";
-
-                switchMethodName = new String[]{"Xl", "Cq"};
+                meFragmentName = "com.tencent.mm.ui.z";
                 break;
             case "6.6.2":
-                iconId = new int[]{2131165910, 2131165913, 2131165914, 2131165915};
-                wClassName = "com.tencent.mm.ui.w";
-                wFieldName = "xKG";
-                wHashMap.put("Lcom/google/android/gms/analytics/internal/u$a;", 0);
-                wHashMap.put("Lcom/google/android/gms/analytics/internal/s;", 1);
-                wHashMap.put("Lcom/google/android/gms/analytics/internal/t$a;", 2);
-                discoverFragmentName = "com.tencent.mm.ui.h";
-                myFragmentName = "com.tencent.mm.ui.y";
-                adapterClassName = "com.tencent.mm.ui.w$a";
-                vMethodName = "xe";
-
-                switchMethodName = new String[]{"Yp", "DW"};
+                discoverFragmentName = "com.tencent.mm.ui.i";
+                meFragmentName = "com.tencent.mm.ui.z";
                 break;
             case "6.6.3":
-                iconId = new int[]{2131165910, 2131165913, 2131165914, 2131165915};
-                wClassName = "com.tencent.mm.ui.w";
-                wFieldName = "xKG";
-                wHashMap.put("Lcom/google/android/gms/common/j$aa;", 0);
-                wHashMap.put("Lcom/google/android/gms/common/internal/zzab;", 1);
-                wHashMap.put("Lcom/google/android/gms/common/j$aa$1;", 2);
-                discoverFragmentName = "com.tencent.mm.ui.h";
-                myFragmentName = "com.tencent.mm.ui.y";
-                adapterClassName = "com.tencent.mm.ui.w$a";
-                vMethodName = "xe";
-
-                switchMethodName = new String[]{"Yp", "DW"};
+                discoverFragmentName = "com.tencent.mm.ui.i";
+                meFragmentName = "com.tencent.mm.ui.z";
                 break;
             case "6.6.5":
-                iconId = new int[]{2131165910, 2131165913, 2131165914, 2131165915};
-                wClassName = "com.tencent.mm.ui.w";
-                wFieldName = "xTl";
-                wHashMap.put("Lcom/google/android/exoplayer2/h/r;", 0);
-                wHashMap.put("Lcom/google/android/exoplayer2/h/r$c;", 1);
-                wHashMap.put("Lcom/google/android/exoplayer2/h/r$e;", 2);
+                discoverFragmentName = "com.tencent.mm.ui.i";
+                meFragmentName = "com.tencent.mm.ui.z";
+                break;
+            case "6.6.6":
                 discoverFragmentName = "com.tencent.mm.ui.h";
-                myFragmentName = "com.tencent.mm.ui.y";
-                adapterClassName = "com.tencent.mm.ui.w$a";
-                vMethodName = "xw";
-
-                switchMethodName = new String[]{"YW", "Ep"};
+                meFragmentName = "com.tencent.mm.ui.y";
                 break;
             default:
-            case "6.6.6":
-                iconId = new int[]{2131165929, 2131165932, 2131165933, 2131165934};
-                wClassName = "com.tencent.mm.ui.w";
-                wFieldName = "yrA";
-                wHashMap.put("Lcom/google/android/exoplayer2/f/e/b;", 0);
-                wHashMap.put("Lcom/google/android/exoplayer2/f/d/b;", 1);
-                wHashMap.put("Lcom/google/android/exoplayer2/f/e/a$a;", 2);
-
+            case "6.6.7":
                 discoverFragmentName = "com.tencent.mm.ui.h";
-                myFragmentName = "com.tencent.mm.ui.y";
-                adapterClassName = "com.tencent.mm.ui.w$a";
-                vMethodName = "xz";
-
-                switchMethodName = new String[]{"ZN", "EB"};
+                meFragmentName = "com.tencent.mm.ui.ab";
                 break;
+        }
+        if (this.classLoader == null) {
+            this.classLoader = classLoader;
+            hook(classLoader);
         }
     }
 
-    public void hook(final ClassLoader classLoader) {
+    public static UIHook getInstance() {
+        return UIHook.SingletonHolder.instance;
+    }
+
+    private static class SingletonHolder {
+        @SuppressLint("StaticFieldLeak")
+        private static final UIHook instance = new UIHook();
+    }
+
+    private void hook(final ClassLoader classLoader) {
         hideDiscover = Boolean.valueOf(PropertiesUtils.getValue(Constant.PRO_FILE, "hide_discover", "false"));
 
         if (!hideDiscover) {
             return;
         }
 
+        initIconId(classLoader);
+        initMainTabUI(classLoader);
         try {
-            Class clazz = XposedHelpers.findClass(wClassName, classLoader);
-            XposedHelpers.setStaticObjectField(clazz, wFieldName, wHashMap);
-
-            XposedHelpers.findAndHookMethod(clazz, switchMethodName[0],
-                    String.class, new XC_MethodReplacement() {
-                        @Override
-                        protected Object replaceHookedMethod(MethodHookParam param) {
-                            XposedHelpers.callMethod(param.thisObject, switchMethodName[1], 0);
-                            return null;
-                        }
-                    });
-
             // replace fragment
             Class baseBundleClazz = XposedHelpers.findClass("android.os.BaseBundle", classLoader);
             XposedHelpers.findAndHookMethod(baseBundleClazz, "putInt", String.class, int.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                     if (param.args[0].equals(discoverFragmentName)) {
-                        param.args[0] = myFragmentName;
+                        param.args[0] = meFragmentName;
                     }
                     super.beforeHookedMethod(param);
                 }
@@ -169,24 +125,15 @@ public class UIHook {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                             if (param.args[1].equals(discoverFragmentName)) {
-                                param.args[1] = myFragmentName;
+                                param.args[1] = meFragmentName;
                             }
                             super.beforeHookedMethod(param);
                         }
                     });
 
-            Class adapterClass = XposedHelpers.findClass(adapterClassName, classLoader);
-
-            XposedHelpers.findAndHookMethod(adapterClass, "getCount", new XC_MethodReplacement() {
-                @Override
-                protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
-                    return 3;
-                }
-            });
-
             Class viewPagerClass = XposedHelpers.findClass("com.tencent.mm.ui.mogic.WxViewPager", classLoader);
 
-            XposedHelpers.findAndHookMethod(viewPagerClass, vMethodName, int.class, new XC_MethodHook() {
+            XposedHelpers.findAndHookMethod(viewPagerClass, "setOffscreenPageLimit", int.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                     // tab count
@@ -220,21 +167,127 @@ public class UIHook {
         } catch (Error | Exception e) {
             XposedBridge.log(e);
         }
+    }
 
+    private HashMap tempMap = new HashMap();
+
+    private void initMainTabUI(final ClassLoader classLoader) {
         try {
-            Class clazz = XposedHelpers.findClass("com.tencent.mm.ui.TabIconView", classLoader);
-            XposedHelpers.findAndHookMethod(clazz, "g",
-                    int.class, int.class, int.class, boolean.class, new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            if ((int) param.args[0] == iconId[0]) {
-                                param.args[0] = iconId[1];
-                                param.args[1] = iconId[2];
-                                param.args[2] = iconId[3];
+            Class homeUIClazz = XposedHelpers.findClass("com.tencent.mm.ui.HomeUI", classLoader);
+            Field[] fields = homeUIClazz.getFields();
+            for (Field field : fields) {
+                if (field.getType().getName().startsWith("com.tencent.mm.ui")) {
+                    Class mainTabUIClazz = field.getType();
+
+                    Field[] mainTabUIFields = mainTabUIClazz.getDeclaredFields();
+                    for (Field mainTabUIField : mainTabUIFields) {
+                        if (mainTabUIField.getType() == HashMap.class && Modifier.isStatic(mainTabUIField.getModifiers())) {
+                            HashMap hashMap = (HashMap) XposedHelpers.getStaticObjectField(mainTabUIClazz, mainTabUIField.getName());
+                            Object threeKey = null;
+                            for (Object o : hashMap.keySet()) {
+                                if ((int) hashMap.get(o) != 2) {
+                                    if ((int) hashMap.get(o) == 3) {
+                                        tempMap.put(threeKey, 2);
+                                    } else {
+                                        tempMap.put(o, hashMap.get(o));
+                                    }
+                                } else {
+                                    threeKey = o;
+                                }
                             }
-                            super.beforeHookedMethod(param);
+                            XposedHelpers.setStaticObjectField(mainTabUIClazz, mainTabUIField.getName(), tempMap);
+                            break;
                         }
-                    });
+                    }
+
+                    handleHook(classLoader, mainTabUIClazz);
+                    break;
+                }
+            }
+        } catch (Error | Exception e) {
+            XposedBridge.log(e);
+        }
+    }
+
+    private void handleHook(final ClassLoader classLoader, Class mainTabUIClazz) {
+        Method[] methods = mainTabUIClazz.getDeclaredMethods();
+        for (Method method : methods) {
+
+            if (method.getParameterTypes().length == 1
+                    && method.getParameterTypes()[0] == String.class
+                    && method.getReturnType() == void.class) {
+
+                XposedHelpers.findAndHookMethod(mainTabUIClazz, method.getName(),
+                        String.class, new XC_MethodHook() {
+                            @Override
+                            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                if (!tempMap.containsKey(param.args[0])) {
+                                    param.args[0] = tempMap.keySet().toArray()[0];
+                                }
+                                super.beforeHookedMethod(param);
+                            }
+                        });
+            }
+        }
+
+        Class[] classes = mainTabUIClazz.getDeclaredClasses();
+        // adapterClass
+        XposedHelpers.findAndHookMethod(classes[0], "getCount", new XC_MethodReplacement() {
+            @Override
+            protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                return 3;
+            }
+        });
+    }
+
+    private boolean isThreeTabIcon = false;
+
+    private void initIconId(final ClassLoader classLoader) {
+        try {
+            Class launcherUIBottomTabViewClazz = XposedHelpers.findClass("com.tencent.mm.ui.LauncherUIBottomTabView", classLoader);
+
+            Method[] methods = launcherUIBottomTabViewClazz.getDeclaredMethods();
+            for (Method method : methods) {
+                if (method.getParameterTypes().length == 1
+                        && method.getParameterTypes()[0] == int.class
+                        && method.getReturnType() != void.class) {
+
+                    XposedHelpers.findAndHookMethod(launcherUIBottomTabViewClazz, method.getName(),
+                            int.class, new XC_MethodHook() {
+                                @Override
+                                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                    isThreeTabIcon = ((int) param.args[0] == 2);
+                                    super.afterHookedMethod(param);
+                                }
+                            });
+                }
+            }
+            Class tabIconViewClazz = XposedHelpers.findClass("com.tencent.mm.ui.TabIconView", classLoader);
+
+            Method[] tabIconViewMethods = tabIconViewClazz.getDeclaredMethods();
+            for (Method tabIconViewMethod : tabIconViewMethods) {
+                if (tabIconViewMethod.getParameterTypes().length == 4
+                        && tabIconViewMethod.getParameterTypes()[0] == int.class
+                        && tabIconViewMethod.getParameterTypes()[1] == int.class
+                        && tabIconViewMethod.getParameterTypes()[2] == int.class
+                        && tabIconViewMethod.getParameterTypes()[3] == boolean.class) {
+
+                    XposedHelpers.findAndHookMethod(tabIconViewClazz, tabIconViewMethod.getName(),
+                            int.class, int.class, int.class, boolean.class, new XC_MethodHook() {
+                                @Override
+                                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                    if (isThreeTabIcon) {
+                                        // 用“发现”页 iconId 递加，算出 “我” 页iconId
+                                        param.args[0] = (int) param.args[0] + 3;
+                                        param.args[1] = (int) param.args[1] + 3;
+                                        param.args[2] = (int) param.args[2] + 3;
+                                    }
+                                    super.beforeHookedMethod(param);
+                                }
+                            });
+                    break;
+                }
+            }
         } catch (Error | Exception e) {
             XposedBridge.log(e);
         }

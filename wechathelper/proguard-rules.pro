@@ -40,3 +40,7 @@
 -dontwarn  c.t.**
 -dontwarn  android.support.v4.animation.**
 -dontwarn  android.support.v7.widget.**
+
+-obfuscationdictionary dic.txt
+-classobfuscationdictionary dic.txt
+-packageobfuscationdictionary dic.txt

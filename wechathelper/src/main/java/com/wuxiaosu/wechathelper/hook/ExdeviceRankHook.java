@@ -8,6 +8,10 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -23,7 +27,6 @@ import io.reactivex.functions.Consumer;
 
 public class ExdeviceRankHook {
 
-    private String itemInfoFieldName;
     private ListView listView;
     private int likeIconId = 0;
 
@@ -33,34 +36,11 @@ public class ExdeviceRankHook {
     private ClassLoader classLoader;
 
     public void init(ClassLoader classLoader, String versionName) {
-        switch (versionName) {
-            case "6.6.0":
-                itemInfoFieldName = "lqh";
-                break;
-            case "6.6.1":
-                itemInfoFieldName = "lus";
-                break;
-            case "6.6.2":
-                itemInfoFieldName = "lZj";
-                break;
-            case "6.6.3":
-                itemInfoFieldName = "lZj";
-                break;
-            case "6.6.5":
-                itemInfoFieldName = "meX";
-                break;
-            default:
-            case "6.6.6":
-                itemInfoFieldName = "mcf";
-                break;
-        }
         if (this.classLoader == null) {
             this.classLoader = classLoader;
             hook(classLoader);
         }
     }
-
-    private long startTime = 0;
 
     public static ExdeviceRankHook getInstance() {
         return ExdeviceRankHookHolder.instance;
@@ -73,7 +53,20 @@ public class ExdeviceRankHook {
 
     private void hook(final ClassLoader classLoader) {
         try {
-            Class contextMenuClazz = XposedHelpers.findClass("com.tencent.mm.ui.base.n", classLoader);
+            Class menuClazz = XposedHelpers.findClass("com.tencent.mm.plugin.exdevice.ui.ExdeviceRankInfoUI$19", classLoader);
+
+            Class contextMenuClazz = null;
+
+            String methodName = "";
+            Method[] methods = menuClazz.getMethods();
+            for (Method method : methods) {
+                if (method.getReturnType() == void.class && method.getParameterTypes().length == 1) {
+                    //写法偷懒了 以后出问题了再说
+                    methodName = method.getName();
+                    contextMenuClazz = method.getParameterTypes()[0];
+                    break;
+                }
+            }
             XposedHelpers.findAndHookMethod(contextMenuClazz, "a",
                     int.class, CharSequence.class, int.class, new XC_MethodHook() {
                         @Override
@@ -84,9 +77,7 @@ public class ExdeviceRankHook {
                             super.beforeHookedMethod(param);
                         }
                     });
-            Class menuClazz = XposedHelpers.findClass("com.tencent.mm.plugin.exdevice.ui.ExdeviceRankInfoUI$19", classLoader);
-
-            XposedBridge.hookAllMethods(menuClazz, "a", new XC_MethodHook() {
+            XposedBridge.hookAllMethods(menuClazz, methodName, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     Object object = param.args[0];
@@ -107,17 +98,39 @@ public class ExdeviceRankHook {
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     MenuItem menuItem = (MenuItem) param.args[0];
                     if (menuItem.getItemId() == 4 && listView != null) {
-                        startTime = System.currentTimeMillis();
-                        XposedBridge.log(" --- >> like start");
                         Observable.create(new ObservableOnSubscribe<View>() {
                             @Override
-                            public void subscribe(ObservableEmitter<View> emitter) throws InterruptedException {
+                            public void subscribe(ObservableEmitter<View> emitter) {
                                 ListAdapter listAdapter = listView.getAdapter();
+                                Object itemObject = listAdapter.getItem(1);
+                                Constructor[] constructors = itemObject.getClass().getDeclaredConstructors();
+
+                                String itemInfoFieldName = "";
+                                for (Constructor constructor : constructors) {
+                                    Class[] classes = constructor.getParameterTypes();
+                                    if (classes.length == 5) {
+                                        if (classes[0] == int.class
+                                                && classes[1] == int.class
+                                                && classes[2] == String.class
+                                                && classes[3] == String.class) {
+
+                                            Field[] fields = itemObject.getClass().getDeclaredFields();
+
+                                            for (Field field : fields) {
+                                                if (field.getType() == classes[4]) {
+                                                    itemInfoFieldName = field.getName();
+                                                    break;
+                                                }
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+
                                 int rankNum = (int) XposedHelpers.getObjectField(
                                         XposedHelpers.getObjectField(listAdapter.getItem(1),
                                                 itemInfoFieldName),
                                         "field_ranknum");
-                                XposedBridge.log(" --- >> for start - > " + (System.currentTimeMillis() - startTime));
                                 for (int i = 3; i < listAdapter.getCount() - 1; i++) {
                                     if (i != rankNum + 2) {
                                         int selfLikeState = (int) XposedHelpers.getObjectField(
@@ -126,14 +139,10 @@ public class ExdeviceRankHook {
                                                 "field_selfLikeState");
                                         if (selfLikeState == 0) {
                                             // 没赞过的
-                                            XposedBridge.log(" --- >> get view start " + i + " - > " + (System.currentTimeMillis() - startTime));
-
                                             View view = ((RelativeLayout) ((LinearLayout)
                                                     ((RelativeLayout) listAdapter.getView(i, null, null))
                                                             .getChildAt(1))
                                                     .getChildAt(1)).getChildAt(1);
-
-                                            XposedBridge.log(" --- >> get view done " + i + " - > " + (System.currentTimeMillis() - startTime) + "  " + view);
 
                                             emitter.onNext(view);
                                         }
@@ -143,10 +152,8 @@ public class ExdeviceRankHook {
                         }).subscribe(new Consumer<View>() {
                             @Override
                             public void accept(View view) {
-                                XposedBridge.log(" --- >> click start - > " + (System.currentTimeMillis() - startTime) + "  " + view);
                                 view.callOnClick();
                                 view.destroyDrawingCache();
-                                XposedBridge.log(" --- >> click done - > " + (System.currentTimeMillis() - startTime) + "  " + view);
                             }
                         });
                     }

@@ -5,8 +5,10 @@ Xposed 微信辅助模块，实现消息防撤回、模拟位置、运动步数�
 ![01.png](https://raw.githubusercontent.com/wuxiaosu/XposedWechatHelper/master/screenshots/01.png)
 ![02.png](https://raw.githubusercontent.com/wuxiaosu/XposedWechatHelper/master/screenshots/02.png)
 ## 下载
-- release from [github](https://github.com/wuxiaosu/XposedWechatHelper/releases) 
-- release from [酷安](https://www.coolapk.com/apk/180057) 
+- release from [github](https://github.com/wuxiaosu/XposedWechatHelper/releases)  
+- ~~release from [酷安](https://www.coolapk.com/apk/180057)~~（被和谐了）  
+## v1.11 
+更改了实现方式；
 ## v1.09 
 新增  
 微信登录自动确认；
