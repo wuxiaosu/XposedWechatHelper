@@ -241,13 +241,13 @@
                 app:preferences_key="@string/pre_key_fake_launcher_menu"
                 app:subheading_text="设置改变需重启微信" />
 
-            <com.wuxiaosu.widget.SettingLabelView
+           <!-- <com.wuxiaosu.widget.SettingLabelView
                 style="@style/SettingLayout"
                 app:external_path="@string/external_path"
                 app:is_external="true"
                 app:label_text="隐藏“发现页”"
                 app:preferences_key="@string/pre_key_hide_discover"
-                app:subheading_text="设置改变需重启微信" />
+                app:subheading_text="设置改变需重启微信" />-->
 
             <com.wuxiaosu.widget.SettingLabelView
                 style="@style/SettingLayout"

@@ -11,11 +11,10 @@ import com.wuxiaosu.wechathelper.hook.EmojiGameHook;
 import com.wuxiaosu.wechathelper.hook.ExdeviceRankHook;
 import com.wuxiaosu.wechathelper.hook.ExtDeviceWXLoginUIHook;
 import com.wuxiaosu.wechathelper.hook.LauncherUIHook;
-import com.wuxiaosu.wechathelper.hook.WalletHook;
 import com.wuxiaosu.wechathelper.hook.RevokeMsgHook;
 import com.wuxiaosu.wechathelper.hook.StepHook;
 import com.wuxiaosu.wechathelper.hook.TencentLocationManagerHook;
-import com.wuxiaosu.wechathelper.hook.UIHook;
+import com.wuxiaosu.wechathelper.hook.WalletHook;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -94,10 +93,10 @@ public class Main implements IXposedHookLoadPackage {
     }
 
     private void handleHook(ClassLoader classLoader, String versionName) {
-        new TencentLocationManagerHook(versionName).hook(classLoader);
+        TencentLocationManagerHook.hook(classLoader);
         EmojiGameHook.getInstance().init(classLoader, versionName);
         WalletHook.getInstance().init(classLoader, versionName);
-        UIHook.getInstance().init(classLoader, versionName);
+//        UIHook.getInstance().init(classLoader, versionName);
         LauncherUIHook.getInstance().init(classLoader, versionName);
         ExdeviceRankHook.getInstance().init(classLoader, versionName);
         RevokeMsgHook.getInstance().init(classLoader, versionName);
