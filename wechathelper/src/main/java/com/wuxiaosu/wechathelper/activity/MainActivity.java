@@ -213,7 +213,7 @@ public class MainActivity extends BaseActivity {
             }
         });
         mTvVersionName.setText(getString(R.string.app_name) + " v" + BuildConfig.VERSION_NAME);
-        mTvInfo.setText("可以请作者喝杯豆浆"
+        mTvInfo.setText("进群一起玩"
                 + getContactInfo()
                 + "\n更多详情：");
         AlertDialog alertDialog = new AlertDialog.Builder(this)
@@ -225,7 +225,7 @@ public class MainActivity extends BaseActivity {
 
     private String getContactInfo() {
         return "\nQ群：[123320001]\n" +
-                "群主人很好\n";
+                "或者请作者喝杯豆浆\n";
     }
 
     private void sendURLIntent(String url) {

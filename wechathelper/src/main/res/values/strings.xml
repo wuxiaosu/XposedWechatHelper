@@ -14,7 +14,7 @@
     <string name="pre_key_morra">morra</string>
     <string name="pre_key_dice">dice</string>
     <string name="pre_key_disable_revoke">disable_revoke</string>
-    <string name="pre_key_hide_discover">hide_discover</string>
+    <string name="pre_key_only_show_chat">only_show_chat</string>
     <string name="pre_key_fake_launcher_menu">fake_launcher_menu</string>
     <string name="pre_key_pc_auto_login">pc_auto_login</string>
 

@@ -9,7 +9,8 @@ Xposed 微信辅助模块，实现消息防撤回、模拟位置、运动步数�
 - ~~release from [酷安](https://www.coolapk.com/apk/180057)~~（被和谐了）  
 ## 交流
 Q群：<a target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=7c9e21cbb5d754014485c8765efdb35a6b8d7fb470e89e2f12579ab82abfcc50" title="【微信助手】XP交流群">123320001</a>  
-群主人很好
+## v1.13 
+诈尸，告诉大家还没弃坑； 
 ## v1.12 
 修复了模拟定位；  
 修复了防撤回；  

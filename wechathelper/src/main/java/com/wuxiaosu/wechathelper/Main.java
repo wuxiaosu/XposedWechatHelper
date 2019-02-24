@@ -96,12 +96,10 @@ public class Main implements IXposedHookLoadPackage {
         TencentLocationManagerHook.hook(classLoader);
         EmojiGameHook.getInstance().init(classLoader, versionName);
         WalletHook.getInstance().init(classLoader, versionName);
-//        UIHook.getInstance().init(classLoader, versionName);
         LauncherUIHook.getInstance().init(classLoader, versionName);
         ExdeviceRankHook.getInstance().init(classLoader, versionName);
         RevokeMsgHook.getInstance().init(classLoader, versionName);
         ExtDeviceWXLoginUIHook.getInstance().init(classLoader, versionName);
-//        XLogHook.getInstance().init(classLoader, versionName);
     }
 
     private String getVersionName(Context context, String pkgName) {
