@@ -4,9 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 
+import com.wuxiaosu.wechathelper.api.ApiFactory;
 import com.wuxiaosu.wechathelper.hook.EmojiGameHook;
 import com.wuxiaosu.wechathelper.hook.ExdeviceRankHook;
 import com.wuxiaosu.wechathelper.hook.ExtDeviceWXLoginUIHook;
@@ -15,6 +14,7 @@ import com.wuxiaosu.wechathelper.hook.RevokeMsgHook;
 import com.wuxiaosu.wechathelper.hook.StepHook;
 import com.wuxiaosu.wechathelper.hook.TencentLocationManagerHook;
 import com.wuxiaosu.wechathelper.hook.WalletHook;
+import com.wuxiaosu.wechathelper.utils.AppUtil;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -28,11 +28,10 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public class Main implements IXposedHookLoadPackage {
 
-    private final String WECHAT_PACKAGE = "com.tencent.mm";
+    public final static String WECHAT_PACKAGE = "com.tencent.mm";
 
     @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
-
         if (lpparam.appInfo == null || (lpparam.appInfo.flags & (ApplicationInfo.FLAG_SYSTEM |
                 ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) != 0) {
             return;
@@ -71,18 +70,14 @@ public class Main implements IXposedHookLoadPackage {
             if (WECHAT_PACKAGE.equals(processName)) {
                 // 只HOOK UI进程
                 try {
-                    // 由于微信Tinker的存在，hook Application.attach 不如 ContextWrapper.attachBaseContext稳定
-                    // 参见 ：https://github.com/Gh0u1L5/WechatMagician/blob/master/src/main/java/com/gh0u1l5/wechatmagician/backend/WechatHook.kt
                     XposedHelpers.findAndHookMethod(ContextWrapper.class,
-                            "attachBaseContext",
-                            Context.class, new XC_MethodHook() {
+                            "attachBaseContext", Context.class, new XC_MethodHook() {
                                 @Override
                                 protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
                                     super.afterHookedMethod(param);
                                     Context context = (Context) param.args[0];
                                     ClassLoader appClassLoader = context.getClassLoader();
-                                    handleHook(appClassLoader,
-                                            getVersionName(context, WECHAT_PACKAGE));
+                                    handleHook(appClassLoader, AppUtil.getVersionName(context, WECHAT_PACKAGE));
                                 }
                             });
                 } catch (Throwable e) {
@@ -93,23 +88,13 @@ public class Main implements IXposedHookLoadPackage {
     }
 
     private void handleHook(ClassLoader classLoader, String versionName) {
+        ApiFactory.initApi(versionName);
         TencentLocationManagerHook.hook(classLoader);
         EmojiGameHook.getInstance().init(classLoader, versionName);
         WalletHook.getInstance().init(classLoader, versionName);
         LauncherUIHook.getInstance().init(classLoader, versionName);
         ExdeviceRankHook.getInstance().init(classLoader, versionName);
-        RevokeMsgHook.getInstance().init(classLoader, versionName);
+        RevokeMsgHook.getInstance().init(classLoader);
         ExtDeviceWXLoginUIHook.getInstance().init(classLoader, versionName);
-    }
-
-    private String getVersionName(Context context, String pkgName) {
-        try {
-            PackageManager packageManager = context.getPackageManager();
-            PackageInfo packInfo = packageManager.getPackageInfo(pkgName, 0);
-            return packInfo.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return "";
     }
 }

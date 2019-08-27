@@ -3,21 +3,18 @@ package com.wuxiaosu.wechathelper.hook;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.text.TextUtils;
-import android.util.Log;
 
+import com.wuxiaosu.wechathelper.api.Api;
+import com.wuxiaosu.wechathelper.api.ApiFactory;
 import com.wuxiaosu.wechathelper.utils.Constant;
 import com.wuxiaosu.widget.utils.PropertiesUtils;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
 /**
@@ -29,7 +26,6 @@ public class RevokeMsgHook {
     private static Map<Long, Object> msgCacheMap = new HashMap<>();
 
     private static Object storageInsertObject;
-    private static String insertMethodName;
 
     private static boolean disableRevoke;
     private ClassLoader classLoader;
@@ -49,8 +45,7 @@ public class RevokeMsgHook {
         private static final RevokeMsgHook instance = new RevokeMsgHook();
     }
 
-    public void init(ClassLoader classLoader, String versionName) {
-
+    public void init(ClassLoader classLoader) {
         if (this.classLoader == null) {
             this.classLoader = classLoader;
             hook(classLoader);
@@ -78,12 +73,6 @@ public class RevokeMsgHook {
                             super.beforeHookedMethod(param);
                         }
                     });
-        } catch (Error | Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            Class clazz = XposedHelpers.findClass("com.tencent.wcdb.database.SQLiteDatabase", classLoader);
             XposedHelpers.findAndHookMethod(clazz, "delete",
                     String.class, String.class, String[].class,
                     new XC_MethodHook() {
@@ -101,46 +90,42 @@ public class RevokeMsgHook {
         }
 
         try {
-            XposedHelpers.findAndHookMethod(File.class, "delete",
-                    new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            String path = ((File) param.thisObject).getAbsolutePath();
-                            if (disableRevoke &&
-                                    (path.contains("/image2/") || path.contains("/voice2/") || path.contains("/video/")))
-                                param.setResult(true);
-                            super.beforeHookedMethod(param);
-                        }
-                    });
+            XposedHelpers.findAndHookMethod(File.class, "delete", new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    String path = ((File) param.thisObject).getAbsolutePath();
+                    if (disableRevoke &&
+                            (path.contains("/image2/") || path.contains("/voice2/") || path.contains("/video/")))
+                        param.setResult(true);
+                    super.beforeHookedMethod(param);
+                }
+            });
         } catch (Error | Exception e) {
             e.printStackTrace();
         }
 
         try {
-            Class insertClazz = getInsertClazz(classLoader);
-            if (insertClazz != null) {
-                insertMethodName = getInsertMethodName(insertClazz);
-                XposedBridge.hookAllMethods(insertClazz, insertMethodName,
-                        new XC_MethodHook() {
-                            @Override
-                            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                                storageInsertObject = param.thisObject;
-                                if (param.args.length == 2) {
-                                    Object msg = param.args[0];
-                                    if (msg == null) {
-                                        return;
-                                    }
-                                    try {
-                                        long msgId = XposedHelpers.getLongField(msg, "field_msgId");
-                                        msgCacheMap.put(msgId, msg);
-                                    } catch (Throwable e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                                super.afterHookedMethod(param);
+            Api api = ApiFactory.getCurrent();
+            Class msgInfoStorageClazz = XposedHelpers.findClass(api.storage_MsgInfoStorage_class, classLoader);
+            Class msgInfoClazz = XposedHelpers.findClass(api.storage_MsgInfo_class, classLoader);
+            XposedHelpers.findAndHookMethod(msgInfoStorageClazz, api.storage_MsgInfoStorage_insert_method, msgInfoClazz, boolean.class,
+                    new XC_MethodHook() {
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            storageInsertObject = param.thisObject;
+                            Object msg = param.args[0];
+                            if (msg == null) {
+                                return;
                             }
-                        });
-            }
+                            try {
+                                long msgId = XposedHelpers.getLongField(msg, "field_msgId");
+                                msgCacheMap.put(msgId, msg);
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                            }
+                            super.afterHookedMethod(param);
+                        }
+                    });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -164,48 +149,6 @@ public class RevokeMsgHook {
         return false;
     }
 
-    private static Class getInsertClazz(ClassLoader classLoader) {
-        try {
-            Class pluginMessengerFoundationClazz = XposedHelpers.findClass("com.tencent.mm.plugin.messenger.foundation.PluginMessengerFoundation", classLoader);
-            Field[] fields = pluginMessengerFoundationClazz.getDeclaredFields();
-            Field tempField = null;
-            // fields 数量最多的
-            for (Field field : fields) {
-                if (field.getType().getName().startsWith("com.tencent.mm.plugin.messenger.foundation")) {
-                    if (tempField == null ||
-                            tempField.getType().getDeclaredFields().length < field.getType().getDeclaredFields().length) {
-                        tempField = field;
-                    }
-                }
-            }
-            // fields 里构造方法只有一个且参数为三个的
-            if (tempField != null) {
-                Field[] fieldFields = tempField.getType().getDeclaredFields();
-                for (Field fieldField : fieldFields) {
-                    Constructor[] constructors = fieldField.getType().getConstructors();
-                    if (constructors.length == 1 && constructors[0].getParameterTypes().length == 3) {
-                        return fieldField.getType();
-                    }
-                }
-            }
-        } catch (Error | Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static String getInsertMethodName(Class insertClass) {
-        Method[] methods = insertClass.getDeclaredMethods();
-        for (Method method : methods) {
-            if (method.getParameterTypes().length == 2
-                    && method.getParameterTypes()[1] == boolean.class
-                    && method.getReturnType() == long.class) {
-                return method.getName();
-            }
-        }
-        return "";
-    }
-
     private static void handleMessageRecall(ContentValues contentValues) {
         long msgId = contentValues.getAsLong("msgId");
         Object msg = msgCacheMap.get(msgId);
@@ -215,7 +158,8 @@ public class RevokeMsgHook {
             XposedHelpers.setObjectField(msg, "field_content",
                     contentValues.getAsString("content") + "(已被阻止)");
             XposedHelpers.setLongField(msg, "field_createTime", createTime + 1L);
-            XposedHelpers.callMethod(storageInsertObject, insertMethodName, msg, false);
+            XposedHelpers.callMethod(storageInsertObject,
+                    ApiFactory.getCurrent().storage_MsgInfoStorage_insert_method, msg, false);
         }
     }
 }
